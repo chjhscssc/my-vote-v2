@@ -189,7 +189,7 @@
         });
 
         function adminReset() {
-            if (prompt("請輸入管理權限密碼：") === "1234") {
+            if (prompt("請輸入管理權限密碼：") === "0126") {
                 if (confirm("警告：此操作將永久清除所有原始表決數據，是否繼續？")) {
                     db.set(null);
                     localStorage.removeItem('voted_name');

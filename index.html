@@ -18,6 +18,7 @@
         .main-title { font-size: 2.5rem; font-weight: 900; display: block; margin-bottom: 15px; color: #000; }
         body.dark-mode .main-title { color: #fff; }
 
+        /* 調整監測畫面文字大小一致 */
         .sub-instruction { 
             font-size: 1.4rem; 
             font-weight: 700; 
@@ -26,7 +27,16 @@
             margin-top: 10px;
             line-height: 1.6;
         }
-        body.dark-mode .sub-instruction { color: #fff; }
+        body.dark-mode .sub-instruction { font-size: 2rem; color: #fff; } /* 監測端文字變大 */
+
+        /* 標題顯示樣式 */
+        #display-vote-title { 
+            font-size: 2rem; 
+            color: #ffc107; 
+            display: none; 
+            margin-bottom: 10px; 
+            font-weight: 900; 
+        }
 
         /* 主席專用輸入區 */
         .admin-input-section { margin-bottom: 30px; text-align: center; }
@@ -47,19 +57,16 @@
         .circle-btn { 
             width: 140px; height: 140px; border-radius: 50%; border: none; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s;
-            opacity: 0.15; cursor: not-allowed; pointer-events: none; /* 預設全暗 */
+            opacity: 0.15; cursor: not-allowed; pointer-events: none;
         }
         
-        /* 啟用狀態 */
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
         .att-btn { background-color: #6c757d; } 
         .pro-btn { background-color: #28a745; }
         .con-btn { background-color: #dc3545; }
-
-        /* 鎖定狀態 */
         .circle-btn.checked { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-        /* 主席與監測介面 */
+        /* 列表樣式 */
         #admin-view, #monitor-view { display: none; max-width: 850px; margin: 40px auto; padding: 0 20px 80px; }
         .status-header-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 35px; text-align: center; line-height: 1.8; border-bottom: 2px solid #333; padding-bottom: 20px; }
         .monitor-list { list-style: none; padding: 0; font-size: 2rem; line-height: 2.5; }
@@ -80,8 +87,8 @@
 <body id="main-body">
 
     <div class="header">
+        <div id="display-vote-title">表決尚未開始</div>
         <span class="main-title">臺北市私立靜心高級中學學生會議案表決系統</span>
-        <span id="display-vote-title" style="font-size: 2rem; color: #ffc107; display: none; margin-top: 10px; font-weight: 900;"></span>
         <span id="status-header" class="sub-instruction">*請先按下出席按鈕，輸入姓名驗證身分後再進行表決*</span>
     </div>
 
@@ -168,7 +175,7 @@
 
             // 更新監測畫面標題
             if(view === 'monitor') {
-                document.getElementById('display-vote-title').innerText = config.voteTitle || "尚未開始表決";
+                document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
             }
 
             const render = (id) => {
@@ -193,33 +200,28 @@
             if(document.getElementById('admin-status-text')) document.getElementById('admin-status-text').innerHTML = statusContent;
             if(document.getElementById('monitor-status-text')) document.getElementById('monitor-status-text').innerHTML = statusContent;
 
-            // 投票者頁面邏輯
+            // 投票者頁面邏輯修正
             if (view !== 'admin' && view !== 'monitor') {
                 if (config.isLocked) {
-                    // 主席尚未開始表決，全部鎖定
                     document.getElementById('att-btn').classList.remove('enabled');
                     document.getElementById('pro-btn').classList.remove('enabled');
                     document.getElementById('con-btn').classList.remove('enabled');
-                    document.getElementById('status-header').innerText = "＊議案尚未開始，請稍候主席指示＊";
+                    document.getElementById('status-header').innerText = "＊表決尚未開始，請等候主席指示＊";
                 } else {
-                    // 主席已開始表決
                     if (currentUserName) {
                         if (voterChoiceMap[currentUserName]) {
                             hasVoted = true;
-                            document.getElementById('pro-btn').classList.remove('enabled');
-                            document.getElementById('con-btn').classList.remove('enabled');
-                            document.getElementById('pro-btn').classList.add('checked');
-                            document.getElementById('con-btn').classList.add('checked');
+                            document.getElementById('pro-btn').className = "circle-btn pro-btn checked";
+                            document.getElementById('con-btn').className = "circle-btn con-btn checked";
                             document.getElementById('status-header').innerText = `＊${currentUserName}，您已完成表決。＊`;
                         } else if (attendance[currentUserName]) {
                             isAttended = true;
-                            document.getElementById('att-btn').classList.add('checked');
+                            document.getElementById('att-btn').className = "circle-btn att-btn checked";
                             document.getElementById('pro-btn').classList.add('enabled');
                             document.getElementById('con-btn').classList.add('enabled');
                             document.getElementById('status-header').innerText = `＊身份確認：${currentUserName}，請進行表決＊`;
                         }
                     } else {
-                        // 尚未簽到但主席已開始
                         document.getElementById('att-btn').classList.add('enabled');
                         document.getElementById('status-header').innerText = "*請先按下出席按鈕，輸入姓名驗證身分後再進行表決*";
                     }
@@ -227,19 +229,11 @@
             }
         });
 
-        // 主席：開始表決
         function startVoting() {
             const title = document.getElementById('vote-title-input').value.trim();
-            if (!title) {
-                alert("請先輸入表決標題！");
-                return;
-            }
-            dbConfig.update({
-                isLocked: false,
-                voteTitle: title,
-                showResult: false
-            });
-            alert("已開啟表決功能，標題已發送至監測畫面。");
+            if (!title) { alert("請先輸入表決標題！"); return; }
+            dbConfig.update({ isLocked: false, voteTitle: title, showResult: false });
+            alert("已開啟表決功能。");
         }
 
         function executeAttendance() {
@@ -259,9 +253,7 @@
             }
         }
 
-        function setShowResult(val) {
-            dbConfig.update({ showResult: val });
-        }
+        function setShowResult(val) { dbConfig.update({ showResult: val }); }
 
         function adminReset() {
             if (prompt("管理密碼：") === "0126") {
@@ -269,7 +261,7 @@
                 dbAttendance.set(null);
                 dbConfig.set({ showResult: false, isLocked: true, voteTitle: "" });
                 document.getElementById('vote-title-input').value = "";
-                alert("系統已成功重設並重新鎖定投票。");
+                alert("系統已重設並重新鎖定投票。");
                 location.reload();
             }
         }

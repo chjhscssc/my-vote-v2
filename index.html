@@ -12,10 +12,10 @@
         /* 深色模式 (主席與監測) */
         body.dark-mode { background: #121212; color: #ffffff; }
 
-        .header { padding: 50px 20px; text-align: center; border-bottom: 1px solid #dee2e6; background: #ffffff; }
+        .header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #dee2e6; background: #ffffff; }
         body.dark-mode .header { background: #1a1a1a; border-bottom: 1px solid #333; }
         
-        .main-title { font-size: 2.5rem; font-weight: 900; display: block; margin-bottom: 15px; color: #000; }
+        .main-title { font-size: 2.5rem; font-weight: 900; display: block; margin-bottom: 5px; color: #000; }
         body.dark-mode .main-title { color: #fff; }
 
         .sub-instruction { 
@@ -23,16 +23,17 @@
             font-weight: 700; 
             display: block; 
             color: #000; 
-            margin-top: 10px;
-            line-height: 1.6;
+            margin-top: 5px;
+            line-height: 1.4;
         }
         body.dark-mode .sub-instruction { font-size: 2rem; color: #fff; }
 
+        /* 監測端黃色標題：緊跟在 sub-instruction 之後 */
         #display-vote-title { 
             font-size: 2rem; 
             color: #ffc107; 
             display: none; 
-            margin-top: 30px; 
+            margin-top: 10px; 
             font-weight: 900; 
             text-align: center;
         }
@@ -65,14 +66,14 @@
         .con-btn { background-color: #dc3545; }
         .circle-btn.checked { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-        /* 列表版面修改：改為 4 直排 Grid */
+        /* 列表版面 */
         #admin-view, #monitor-view { display: none; max-width: 1100px; margin: 40px auto; padding: 0 20px 80px; }
         .status-header-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 35px; text-align: center; line-height: 1.8; border-bottom: 2px solid #333; padding-bottom: 20px; }
         
         .monitor-list { 
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 4 直排 */
-            grid-template-rows: repeat(2, auto);    /* 每排 2 人 */
+            grid-template-columns: repeat(4, 1fr); 
+            grid-template-rows: repeat(2, auto); 
             gap: 20px 40px;
             list-style: none; 
             padding: 0; 
@@ -99,6 +100,7 @@
     <div class="header">
         <span class="main-title">臺北市私立靜心高級中學學生會議案表決系統</span>
         <span id="status-header" class="sub-instruction">*請先按下出席按鈕，輸入姓名驗證身分後再進行表決*</span>
+        <div id="display-vote-title">表決尚未開始</div>
     </div>
 
     <div id="user-view">
@@ -129,13 +131,11 @@
             <button class="action-btn btn-show" onclick="setShowResult(true)">顯示結果</button>
             <button class="action-btn btn-reset" onclick="adminReset()">系統重置</button>
         </div>
-        <div id="display-vote-title-admin" style="font-size: 2rem; color: #ffc107; text-align: center; margin-top: 30px; font-weight: 900;">表決尚未開始</div>
     </div>
 
     <div id="monitor-view">
         <div id="monitor-status-text" class="status-header-text"></div>
         <ul id="shared-monitor-list" class="monitor-list"></ul>
-        <div id="display-vote-title">表決尚未開始</div>
     </div>
 
     <script>
@@ -185,8 +185,9 @@
             });
 
             const currentTitle = config.voteTitle || "表決尚未開始";
-            if(document.getElementById('display-vote-title')) document.getElementById('display-vote-title').innerText = currentTitle;
-            if(document.getElementById('display-vote-title-admin')) document.getElementById('display-vote-title-admin').innerText = currentTitle;
+            if(document.getElementById('display-vote-title')) {
+                document.getElementById('display-vote-title').innerText = currentTitle;
+            }
 
             const render = (id) => {
                 const el = document.getElementById(id);

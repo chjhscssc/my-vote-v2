@@ -9,7 +9,7 @@
     <style>
         body { margin: 0; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; }
         
-        /* 深色模式 (主席與監測) */
+        /* 深色模式 */
         body.dark-mode { background: #121212; color: #ffffff; }
 
         .header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #dee2e6; background: #ffffff; }
@@ -28,24 +28,45 @@
         }
         body.dark-mode .sub-instruction { font-size: 2rem; color: #fff; }
 
-        /* 監測端黃色標題：緊跟在 sub-instruction 之後 */
+        /* 表決標題：支援換行並置中 */
         #display-vote-title { 
             font-size: 2rem; 
             color: #ffc107; 
             display: none; 
-            margin-top: 10px; 
+            margin-top: 15px; 
             font-weight: 900; 
             text-align: center;
+            white-space: pre-wrap; /* 支援換行 */
+            line-height: 1.5;
         }
 
-        /* 主席專用輸入區 */
-        .admin-input-section { margin-bottom: 30px; text-align: center; }
-        .vote-title-input { 
-            padding: 10px; font-size: 1.5rem; width: 60%; font-family: "標楷體"; 
-            border-radius: 8px; border: 1px solid #555; background: #222; color: #fff;
-        }
+        /* 列表版面 */
+        #admin-view, #monitor-view { display: none; max-width: 1100px; margin: 40px auto; padding: 0 20px 80px; }
+        .status-header-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 35px; text-align: center; line-height: 1.8; border-bottom: 2px solid #333; padding-bottom: 20px; }
+        
+        .color-att { color: #ffffff; }
+        .color-pro { color: #28a745; }
+        .color-con { color: #dc3545; }
 
-        /* 投票者介面按鈕 */
+        .monitor-list { 
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); 
+            grid-template-rows: repeat(2, auto); 
+            gap: 20px 40px;
+            list-style: none; 
+            padding: 0; 
+            font-size: 2.2rem; 
+            line-height: 1.5; 
+        }
+        
+        .voter-line { text-align: left; }
+        .v-row { color: #555; transition: 0.3s; white-space: nowrap; }
+        .v-row.v-present { color: #fff; }
+        .v-row.v-pro { color: #28a745; }
+        .v-row.v-con { color: #dc3545; }
+        .v-num { display: inline-block; width: 60px; font-weight: 900; }
+
+        /* 投票按鈕區 */
         #user-view { display: none; padding: 60px 10px 80px; }
         .vote-section { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
         .vote-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
@@ -66,28 +87,13 @@
         .con-btn { background-color: #dc3545; }
         .circle-btn.checked { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-        /* 列表版面 */
-        #admin-view, #monitor-view { display: none; max-width: 1100px; margin: 40px auto; padding: 0 20px 80px; }
-        .status-header-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 35px; text-align: center; line-height: 1.8; border-bottom: 2px solid #333; padding-bottom: 20px; }
-        
-        .monitor-list { 
-            display: grid;
-            grid-template-columns: repeat(4, 1fr); 
-            grid-template-rows: repeat(2, auto); 
-            gap: 20px 40px;
-            list-style: none; 
-            padding: 0; 
-            font-size: 2.2rem; 
-            line-height: 1.5; 
+        /* 主席控制區：多行標題輸入 */
+        .admin-input-section { margin-bottom: 30px; text-align: center; }
+        .vote-title-input { 
+            padding: 10px; font-size: 1.5rem; width: 60%; font-family: "標楷體"; 
+            border-radius: 8px; border: 1px solid #555; background: #222; color: #fff;
+            height: 100px; resize: vertical; /* 支援多行輸入 */
         }
-        
-        .voter-line { text-align: left; }
-        .v-row { color: #555; transition: 0.3s; white-space: nowrap; }
-        .v-row.v-present { color: #fff; }
-        .v-row.v-pro { color: #28a745; }
-        .v-row.v-con { color: #dc3545; }
-        .v-num { display: inline-block; width: 60px; font-weight: 900; }
-
         .controls { margin-top: 50px; text-align: center; }
         .action-btn { padding: 15px 40px; font-size: 1.4rem; cursor: pointer; border-radius: 8px; border: none; font-family: "標楷體"; margin: 0 10px; font-weight: 700; }
         .btn-start { background: #28a745; color: white; }
@@ -122,7 +128,7 @@
 
     <div id="admin-view">
         <div class="admin-input-section">
-            <input type="text" id="vote-title-input" class="vote-title-input" placeholder="請在此輸入表決議案標題">
+            <textarea id="vote-title-input" class="vote-title-input" placeholder="請在此輸入表決議案標題（可按 Enter 換行）"></textarea>
         </div>
         <div id="admin-status-text" class="status-header-text"></div>
         <ul id="admin-monitor-list" class="monitor-list"></ul>
@@ -165,7 +171,8 @@
         } else if (view === 'monitor') {
             document.body.classList.add('dark-mode');
             document.getElementById('monitor-view').style.display = 'block';
-            document.getElementById('status-header').innerText = "議事即時監測";
+            // 監測頁面隱藏「議事即時監測」文字，僅保留大標與表決標題
+            document.getElementById('status-header').style.display = 'none';
             document.getElementById('display-vote-title').style.display = 'block';
         } else {
             document.getElementById('user-view').style.display = 'block';
@@ -184,9 +191,8 @@
                 if (v.choice === '贊成') proCount++; else conCount++;
             });
 
-            const currentTitle = config.voteTitle || "表決尚未開始";
             if(document.getElementById('display-vote-title')) {
-                document.getElementById('display-vote-title').innerText = currentTitle;
+                document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
             }
 
             const render = (id) => {
@@ -205,8 +211,8 @@
             render('shared-monitor-list');
 
             const statusContent = config.showResult 
-                ? `出席：<span style="color:#fff">${attCount} 人</span> | 贊成：<span style="color:#28a745">${proCount} 票</span> | 反對：<span style="color:#dc3545">${conCount} 票</span>`
-                : `出席：<span style="color:#fff">白色</span> | 贊成：<span style="color:#28a745">綠色</span> | 反對：<span style="color:#dc3545">紅色</span>`;
+                ? `<span class="color-att">出席：${attCount} 人</span> &nbsp;&nbsp; <span class="color-pro">贊成：${proCount} 票</span> &nbsp;&nbsp; <span class="color-con">反對：${conCount} 票</span>`
+                : `<span class="color-att">出席：白色</span> &nbsp;&nbsp; <span class="color-pro">贊成：綠色</span> &nbsp;&nbsp; <span class="color-con">反對：紅色</span>`;
 
             if(document.getElementById('admin-status-text')) document.getElementById('admin-status-text').innerHTML = statusContent;
             if(document.getElementById('monitor-status-text')) document.getElementById('monitor-status-text').innerHTML = statusContent;
@@ -214,8 +220,6 @@
             if (view !== 'admin' && view !== 'monitor') {
                 if (config.isLocked) {
                     document.getElementById('att-btn').classList.remove('enabled');
-                    document.getElementById('pro-btn').classList.remove('enabled');
-                    document.getElementById('con-btn').classList.remove('enabled');
                     document.getElementById('status-header').innerText = "＊表決尚未開始，請等候主席指示＊";
                 } else {
                     if (currentUserName) {

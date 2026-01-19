@@ -53,13 +53,13 @@
         .status-header-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 35px; text-align: center; line-height: 1.8; border-bottom: 2px solid #333; padding-bottom: 20px; }
         .monitor-list { list-style: none; padding: 0; font-size: 2rem; line-height: 2.5; }
         
-        /* 號碼與姓名之間的空格設定 */
-        .voter-line .v-num { display: inline-block; width: 80px; }
+        /* 號碼樣式：讓編號與姓名顏色同步 */
+        .v-row { color: #555; transition: 0.3s; } /* 預設深灰色 (未出席) */
+        .v-row.v-present { color: #fff; }        /* 已出席 (白色) */
+        .v-row.v-pro { color: #28a745; }        /* 贊成 (綠色) */
+        .v-row.v-con { color: #dc3545; }        /* 反對 (紅色) */
 
-        .voter-name.v-absent { color: #555; } 
-        .voter-name.v-present { color: #fff; } 
-        .voter-name.v-pro { color: #28a745; } 
-        .voter-name.v-con { color: #dc3545; }
+        .v-num { display: inline-block; width: 80px; }
 
         .controls { margin-top: 50px; text-align: center; }
         .action-btn { padding: 15px 40px; font-size: 1.4rem; cursor: pointer; border-radius: 8px; border: none; font-family: "標楷體"; margin: 0 10px; font-weight: 700; }
@@ -155,14 +155,22 @@
                 if(!el) return;
                 el.innerHTML = "";
                 allowedUsers.forEach((name, index) => {
-                    let state = "v-absent";
-                    if (voterChoiceMap[name]) state = voterChoiceMap[name] === '贊成' ? "v-pro" : "v-con";
-                    else if (attendance[name]) state = "v-present";
+                    let stateClass = ""; // 預設狀態 (未出席)
+                    if (voterChoiceMap[name]) {
+                        stateClass = voterChoiceMap[name] === '贊成' ? "v-pro" : "v-con";
+                    } else if (attendance[name]) {
+                        stateClass = "v-present";
+                    }
                     
-                    // 格式化編號為 001, 002...
                     const formattedNum = (index + 1).toString().padStart(3, '0');
                     
-                    el.innerHTML += `<li class="voter-line"><span class="v-num">${formattedNum}</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="voter-name ${state}">${name}</span></li>`;
+                    // 將 stateClass 應用在整行 span 上，讓編號與姓名同步變色
+                    el.innerHTML += `
+                        <li class="voter-line">
+                            <span class="v-row ${stateClass}">
+                                <span class="v-num">${formattedNum}</span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${name}</span>
+                            </span>
+                        </li>`;
                 });
             };
             render('admin-monitor-list');

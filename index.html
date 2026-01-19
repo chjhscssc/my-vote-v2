@@ -7,16 +7,34 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* 基礎全域設定 */
         body { margin: 0; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; }
         
-        /* 深色模式 (用於主席與監測頁面) */
+        /* 深色模式 (主席與監測) */
         body.dark-mode { background: #121212; color: #ffffff; }
 
-        .header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #dee2e6; background: #ffffff; }
+        .header { padding: 50px 20px; text-align: center; border-bottom: 1px solid #dee2e6; background: #ffffff; }
         body.dark-mode .header { background: #1a1a1a; border-bottom: 1px solid #333; }
         
-        /* 1. 投票者介面樣式 */
+        /* 標題與副標題設定 */
+        .main-title { 
+            font-size: 2.5rem; 
+            font-weight: 900; 
+            display: block; 
+            margin-bottom: 15px; 
+            color: #000;
+        }
+        body.dark-mode .main-title { color: #fff; }
+
+        .sub-instruction { 
+            font-size: 1.4rem; 
+            font-weight: 700; 
+            display: block; 
+            color: #000; 
+            margin-top: 10px;
+        }
+        body.dark-mode .sub-instruction { color: #fff; }
+
+        /* 投票者介面 */
         #user-view { display: none; padding: 60px 10px; }
         .vote-section { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
         .vote-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
@@ -24,38 +42,35 @@
         .att-label { background-color: #adb5bd; } 
         .pro-label { background-color: #28a745; } 
         .con-label { background-color: #dc3545; } 
-        .circle-btn { width: 140px; height: 140px; border-radius: 50%; border: none; cursor: pointer; transition: 0.3s; }
+        .circle-btn { width: 140px; height: 140px; border-radius: 50%; border: none; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .att-btn { background-color: #6c757d; } 
         .pro-btn { background-color: #28a745; opacity: 0.15; pointer-events: none; }
         .con-btn { background-color: #dc3545; opacity: 0.15; pointer-events: none; }
         .circle-btn.enabled { opacity: 1; pointer-events: auto; }
+        .circle-btn.checked { opacity: 0.5; }
 
-        /* 2. 主席與監測介面樣式 */
-        #admin-view, #monitor-view { display: none; max-width: 800px; margin: 30px auto; padding: 0 20px; }
+        /* 主席與監測介面 */
+        #admin-view, #monitor-view { display: none; max-width: 850px; margin: 40px auto; padding: 0 20px 80px; }
+        .status-header-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 35px; text-align: center; line-height: 1.8; border-bottom: 2px solid #333; padding-bottom: 20px; }
         
-        .status-header-text { font-size: 1.6rem; font-weight: 700; margin-bottom: 25px; text-align: center; line-height: 1.6; }
-        
-        .monitor-list { list-style: none; padding: 0; font-size: 1.8rem; line-height: 2.2; }
-        .voter-name.v-absent { color: #666; }   /* 未出席：灰色 */
-        .voter-name.v-present { color: #fff; }  /* 已出席：白色 */
-        .voter-name.v-pro { color: #28a745; }  /* 贊成：綠色 */
-        .voter-name.v-con { color: #dc3545; }  /* 反對：紅色 */
+        .monitor-list { list-style: none; padding: 0; font-size: 2rem; line-height: 2.5; }
+        .voter-name.v-absent { color: #555; } 
+        .voter-name.v-present { color: #fff; } 
+        .voter-name.v-pro { color: #28a745; } 
+        .voter-name.v-con { color: #dc3545; }
 
-        .controls { margin-top: 40px; text-align: center; }
-        .action-btn { padding: 12px 30px; font-size: 1.3rem; cursor: pointer; border-radius: 5px; border: none; font-family: "標楷體"; margin: 0 10px; }
+        /* 控制按鈕 */
+        .controls { margin-top: 50px; text-align: center; }
+        .action-btn { padding: 15px 40px; font-size: 1.4rem; cursor: pointer; border-radius: 8px; border: none; font-family: "標楷體"; margin: 0 10px; font-weight: 700; }
         .btn-show { background: #007bff; color: white; }
-        .btn-reset { background: #333; color: #888; font-size: 1rem; }
-
-        /* 統計顯示區塊 */
-        .result-display { display: none; text-align: center; margin-top: 40px; }
-        .result-item { font-size: 3rem; font-weight: 700; margin: 20px 0; }
+        .btn-reset { background: #333; color: #777; font-size: 1rem; }
     </style>
 </head>
 <body id="main-body">
 
     <div class="header">
         <span class="main-title">臺北市私立靜心高級中學學生會議案表決系統</span>
-        <span id="status-header" style="font-size: 1.2rem; color: #888;"></span>
+        <span id="status-header" class="sub-instruction"></span>
     </div>
 
     <div id="user-view">
@@ -76,9 +91,7 @@
     </div>
 
     <div id="admin-view">
-        <div id="admin-status-text" class="status-header-text">
-            出席：<span style="color:#fff">白色</span> | 贊成：<span style="color:#28a745">綠色</span> | 反對：<span style="color:#dc3545">紅色</span>
-        </div>
+        <div id="admin-status-text" class="status-header-text"></div>
         <ul id="admin-monitor-list" class="monitor-list"></ul>
         <div class="controls">
             <button class="action-btn btn-show" onclick="setShowResult(true)">顯示結果</button>
@@ -87,14 +100,8 @@
     </div>
 
     <div id="monitor-view">
-        <div id="monitor-status-text" class="status-header-text">
-            (等待主席公布表決結果)
-        </div>
-        <div id="monitor-results" class="result-display">
-            <div class="result-item" style="color: #ffffff;">出席：<span id="res-att">0</span> 人</div>
-            <div class="result-item" style="color: #28a745;">贊成：<span id="res-pro">0</span> 票</div>
-            <div class="result-item" style="color: #dc3545;">反對：<span id="res-con">0</span> 票</div>
-        </div>
+        <div id="monitor-status-text" class="status-header-text"></div>
+        <ul id="shared-monitor-list" class="monitor-list"></ul>
     </div>
 
     <script>
@@ -107,30 +114,29 @@
         const db = firebase.database();
         const dbVotes = db.ref('detailed_votes');
         const dbAttendance = db.ref('attendance_list');
-        const dbConfig = db.ref('system_config'); // 用來同步是否「顯示結果」
+        const dbConfig = db.ref('system_config');
 
-        const allowedUsers = ["劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "李致寬", "楊桂愷", "張丞萱", "謝佳杰"];
+        // 已將謝佳杰移至首位
+        const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "李致寬", "楊桂愷", "張丞萱"];
         let currentUserName = "";
         let hasVoted = false;
 
-        // 路由控制
         const urlParams = new URLSearchParams(window.location.search);
         const view = urlParams.get('view');
 
         if (view === 'admin') {
             document.body.classList.add('dark-mode');
             document.getElementById('admin-view').style.display = 'block';
-            document.getElementById('status-header').innerText = "主席控制台";
+            document.getElementById('status-header').innerText = "主席控制後台";
         } else if (view === 'monitor') {
             document.body.classList.add('dark-mode');
             document.getElementById('monitor-view').style.display = 'block';
-            document.getElementById('status-header').innerText = "即時監測畫面";
+            document.getElementById('status-header').innerText = "議事即時監測";
         } else {
             document.getElementById('user-view').style.display = 'block';
-            document.getElementById('status-header').innerText = "請先點擊灰色按鈕確認出席";
+            document.getElementById('status-header').innerText = "請點擊按鈕確認出席身份";
         }
 
-        // 資料同步與監聽
         db.ref().on('value', (snapshot) => {
             const data = snapshot.val() || {};
             const votes = data.detailed_votes || {};
@@ -144,60 +150,48 @@
                 if (v.choice === '贊成') proCount++; else conCount++;
             });
 
-            // 1. 更新主席端的名單
-            const adminList = document.getElementById('admin-monitor-list');
-            if(adminList) {
-                adminList.innerHTML = "";
+            function renderList(elementId) {
+                const el = document.getElementById(elementId);
+                if(!el) return;
+                el.innerHTML = "";
                 allowedUsers.forEach((name, index) => {
                     let stateClass = "v-absent";
                     if (voterChoiceMap[name]) stateClass = voterChoiceMap[name] === '贊成' ? "v-pro" : "v-con";
                     else if (attendance[name]) stateClass = "v-present";
-                    adminList.innerHTML += `<li class="voter-line">${index + 1}. <span class="voter-name ${stateClass}">${name}</span></li>`;
+                    el.innerHTML += `<li class="voter-line">${index + 1}. <span class="voter-name ${stateClass}">${name}</span></li>`;
                 });
             }
+            renderList('admin-monitor-list');
+            renderList('shared-monitor-list');
 
-            // 2. 更新主席端與監測端的結果顯示 (根據 config.showResult)
-            const monitorRes = document.getElementById('monitor-results');
-            if (config.showResult) {
-                const resultHTML = `出席：<span style="color:#fff">${attCount}</span> | 贊成：<span style="color:#28a745">${proCount}</span> | 反對：<span style="color:#dc3545">${conCount}</span>`;
-                if(document.getElementById('admin-status-text')) document.getElementById('admin-status-text').innerHTML = resultHTML;
-                if(document.getElementById('monitor-status-text')) document.getElementById('monitor-status-text').innerHTML = "表決結果如下：";
-                if(monitorRes) {
-                    monitorRes.style.display = 'block';
-                    document.getElementById('res-att').innerText = attCount;
-                    document.getElementById('res-pro').innerText = proCount;
-                    document.getElementById('res-con').innerText = conCount;
-                }
-            } else {
-                // 回到初始提示狀態
-                if(document.getElementById('admin-status-text')) document.getElementById('admin-status-text').innerHTML = '出席：<span style="color:#fff">白色</span> | 贊成：<span style="color:#28a745">綠色</span> | 反對：<span style="color:#dc3545">紅色</span>';
-                if(document.getElementById('monitor-status-text')) document.getElementById('monitor-status-text').innerHTML = "(等待主席公布表決結果)";
-                if(monitorRes) monitorRes.style.display = 'none';
-            }
+            const statusContent = config.showResult 
+                ? `出席：<span style="color:#fff">${attCount} 人</span> | 贊成：<span style="color:#28a745">${proCount} 票</span> | 反對：<span style="color:#dc3545">${conCount} 票</span>`
+                : `出席：<span style="color:#fff">白色</span> | 贊成：<span style="color:#28a745">綠色</span> | 反對：<span style="color:#dc3545">紅色</span>`;
 
-            // 3. 投票者邏輯
+            if(document.getElementById('admin-status-text')) document.getElementById('admin-status-text').innerHTML = statusContent;
+            if(document.getElementById('monitor-status-text')) document.getElementById('monitor-status-text').innerHTML = statusContent;
+
             if (currentUserName !== "") {
                 if (voterChoiceMap[currentUserName]) {
                     hasVoted = true;
                     document.getElementById('pro-btn').classList.remove('enabled');
                     document.getElementById('con-btn').classList.remove('enabled');
-                    document.getElementById('status-header').innerText = `＊${currentUserName}，您已完成表決。＊`;
+                    document.getElementById('status-header').innerText = `＊身份確認：${currentUserName} (已完成投票)＊`;
                 } else if (attendance[currentUserName]) {
                     document.getElementById('pro-btn').classList.add('enabled');
                     document.getElementById('con-btn').classList.add('enabled');
                     document.getElementById('att-btn').classList.add('checked');
                     document.getElementById('att-label-text').innerText = currentUserName;
-                    document.getElementById('status-header').innerText = `＊身份確認：${currentUserName}，請進行表決＊`;
+                    document.getElementById('status-header').innerText = `＊身份確認：${currentUserName} (請進行表決)＊`;
                 }
             }
         });
 
-        // 按鈕功能
         function executeAttendance() {
             let nameInput = prompt("請輸入姓名：");
             if (!nameInput) return;
             let trimmed = nameInput.trim();
-            if (!allowedUsers.includes(trimmed)) { alert("無表決權"); return; }
+            if (!allowedUsers.includes(trimmed)) { alert("無表決權限"); return; }
             currentUserName = trimmed;
             dbAttendance.child(currentUserName).set(true);
         }
@@ -218,7 +212,7 @@
                 dbVotes.set(null);
                 dbAttendance.set(null);
                 dbConfig.set({ showResult: false });
-                alert("數據已清空");
+                alert("系統已重設");
             }
         }
     </script>

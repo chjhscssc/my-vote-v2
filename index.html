@@ -10,92 +10,90 @@
         html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; overflow: hidden; }
         body.dark-mode { background: #121212; color: #ffffff; }
 
-        /* 右上角倒計時器 */
-        #timer-display { position: absolute; top: 20px; right: 30px; font-size: 3rem; font-weight: 900; color: #ffc107; font-family: monospace; z-index: 100; }
-
-        .header { padding: 30px 20px; text-align: center; border-bottom: 2px solid #dee2e6; background: #ffffff; width: 100%; box-sizing: border-box; flex-shrink: 0; position: relative; }
+        /* 標頭配置 */
+        .header { padding: 20px 40px; text-align: center; border-bottom: 2px solid #dee2e6; background: #ffffff; width: 100%; box-sizing: border-box; flex-shrink: 0; }
         body.dark-mode .header { background: #1a1a1a; border-bottom: 1px solid #333; }
-        .main-title { font-size: 2.2rem; font-weight: 900; display: block; }
-        .sub-instruction { font-size: 1.8rem; font-weight: 700; display: block; margin-top: 10px; color: #007bff; }
-        #display-vote-title { font-size: 2.5rem; color: #ffc107; display: none; margin-top: 15px; font-weight: 900; }
+        .main-title { font-size: 2.2rem; font-weight: 900; display: block; margin-bottom: 10px; }
 
-        /* 投票介面 */
-        #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        /* 三欄標題佈局 */
+        .title-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px; }
+        .title-left { flex: 2; text-align: left; font-size: 2.2rem; color: #ffc107; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .title-right { flex: 1.5; display: flex; justify-content: flex-end; align-items: center; gap: 40px; font-size: 2rem; font-weight: 900; }
+        .timer-box { display: flex; align-items: center; gap: 10px; }
+        #timer-display { color: #ffc107; }
+
+        /* 統計狀態欄 */
+        .status-bar { font-size: 2.2rem; font-weight: 900; margin: 20px 0; text-align: center; }
+        .color-att { color: #ffffff; } .color-pro { color: #28a745; } .color-con { color: #dc3545; }
+
+        /* 名單置中配置 */
+        .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; }
+        .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px 50px; list-style: none; padding: 0; margin: 0; font-size: 2.5rem; width: fit-content; }
+        .v-row { color: #555; font-weight: 900; }
+        .v-present { color: #fff; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
+        .v-num { display: inline-block; width: 60px; }
+
+        /* 投票端 */
+        #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .vote-section { display: flex; justify-content: center; gap: 50px; }
-        .vote-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
-        
-        /* 方框文字極大化 */
-        .label-box { 
-            width: 220px; padding: 15px 0; border-radius: 20px; font-weight: 900; 
-            font-size: 3.8rem; text-align: center; color: #000; box-shadow: 0 6px 12px rgba(0,0,0,0.2); 
-            letter-spacing: 5px; box-sizing: border-box; 
-        }
-        .att-label { background-color: #adb5bd; } 
-        .pro-label { background-color: #28a745; } 
-        .con-label { background-color: #dc3545; } 
-
+        .label-box { width: 220px; padding: 15px 0; border-radius: 20px; font-weight: 900; font-size: 3.6rem; text-align: center; color: #000; box-shadow: 0 6px 12px rgba(0,0,0,0.2); letter-spacing: 5px; box-sizing: border-box; }
+        .att-label { background-color: #adb5bd; } .pro-label { background-color: #28a745; } .con-label { background-color: #dc3545; }
         .circle-btn { width: 220px; height: 220px; border-radius: 50%; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); opacity: 0.15; cursor: not-allowed; pointer-events: none; }
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
-        .att-btn { background-color: #6c757d; } .pro-btn { background-color: #28a745; } .con-btn { background-color: #dc3545; }
+        
+        #voted-message { display: none; text-align: center; }
+        .voted-text { font-size: 3.2rem; font-weight: 900; color: #28a745; line-height: 1.6; }
 
-        /* 完成表決後的畫面 */
-        #voted-message { display: none; text-align: center; padding: 40px; }
-        .voted-text { font-size: 3.5rem; font-weight: 900; color: #28a745; line-height: 1.5; margin-bottom: 20px; }
-        .voted-timer { font-size: 5rem; font-weight: 900; color: #ffc107; font-family: monospace; }
-
-        /* 監測與管理 */
-        #admin-view, #monitor-view { display: none; flex: 1; width: 100%; padding: 40px; box-sizing: border-box; }
-        .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; list-style: none; padding: 0; font-size: 2.5rem; }
-        .v-row { color: #555; } .v-present { color: #fff; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
-        .controls { margin-top: 50px; text-align: center; }
-        .action-btn { padding: 20px 50px; font-size: 1.8rem; cursor: pointer; border-radius: 10px; margin: 0 15px; font-weight: bold; font-family: "標楷體"; }
+        /* 主席控制區 */
+        #admin-view { display: none; padding: 30px; }
+        .admin-input-group { display: flex; gap: 20px; margin-bottom: 20px; }
+        .vote-title-input { flex: 1; height: 80px; font-size: 1.8rem; padding: 10px; font-family: '標楷體'; }
+        .confirm-btn { padding: 0 40px; background: #007bff; color: white; border: none; border-radius: 10px; font-size: 1.5rem; cursor: pointer; }
     </style>
 </head>
 <body id="main-body">
 
-    <div id="timer-display">01:00</div>
-
     <div class="header">
         <span class="main-title">臺北市私立靜心高級中學學生會議案表決系統</span>
-        <span id="status-header" class="sub-instruction">*請驗證身分*</span>
-        <div id="display-vote-title"></div>
+        <div class="title-bar">
+            <div id="display-vote-title" class="title-left">（請輸入議案標題）</div>
+            <div class="title-right">
+                <span>表決型態：記名</span>
+                <div class="timer-box">倒數計時 <span id="timer-display">01:00</span></div>
+            </div>
+        </div>
     </div>
 
     <div id="user-view">
+        <span id="status-header" style="font-size: 1.8rem; margin-bottom: 30px; font-weight: bold; color: #007bff;">*請驗證身分*</span>
         <div id="vote-controls" class="vote-section">
-            <div class="vote-container">
-                <div class="label-box att-label">出席</div>
-                <button id="att-btn" class="circle-btn att-btn" onclick="executeAttendance()"></button>
-            </div>
-            <div class="vote-container">
-                <div class="label-box pro-label">贊成</div>
-                <button id="pro-btn" class="circle-btn pro-btn" onclick="executeVote('贊成')"></button>
-            </div>
-            <div class="vote-container">
-                <div class="label-box con-label">反對</div>
-                <button id="con-btn" class="circle-btn con-btn" onclick="executeVote('反對')"></button>
-            </div>
+            <div class="vote-container"><div class="label-box att-label">出席</div><button id="att-btn" class="circle-btn" onclick="executeAttendance()" style="background:#6c757d"></button></div>
+            <div class="vote-container"><div class="label-box pro-label">贊成</div><button id="pro-btn" class="circle-btn" onclick="executeVote('贊成')" style="background:#28a745"></button></div>
+            <div class="vote-container"><div class="label-box con-label">反對</div><button id="con-btn" class="circle-btn" onclick="executeVote('反對')" style="background:#dc3545"></button></div>
         </div>
         <div id="voted-message">
             <div class="voted-text">您已完成表決<br>請靜待主席宣布表決結果</div>
-            <div id="voted-countdown" class="voted-timer">01:00</div>
+            <div style="font-size: 4rem; color: #ffc107; font-weight: 900; margin-top: 20px;" id="user-timer">01:00</div>
         </div>
+    </div>
+
+    <div id="monitor-view" style="display:none; flex-direction: column; flex: 1;">
+        <div id="monitor-status" class="status-bar"></div>
+        <div class="monitor-container"><ul id="shared-monitor-list" class="monitor-list"></ul></div>
     </div>
 
     <div id="admin-view">
-        <textarea id="vote-title-input" style="width:100%; height:100px; font-size:1.8rem; margin-bottom:20px; font-family:'標楷體';" placeholder="輸入議案標題..."></textarea>
-        <div id="admin-status" style="font-size:2rem; margin-bottom:20px; text-align:center;"></div>
-        <ul id="admin-monitor-list" class="monitor-list"></ul>
-        <div class="controls">
-            <button class="action-btn" style="background:#28a745; color:white;" onclick="startVoting()">開始表決</button>
-            <button class="action-btn" style="background:#007bff; color:white;" onclick="dbConfig.update({showResult:true})">顯示結果</button>
-            <button class="action-btn" style="background:#444; color:#ccc;" onclick="adminReset()">重置系統</button>
+        <div class="admin-input-group">
+            <textarea id="vote-title-input" class="vote-title-input" placeholder="輸入議案標題..."></textarea>
+            <button class="confirm-btn" onclick="confirmTitle()">確認標題</button>
         </div>
-    </div>
-
-    <div id="monitor-view">
-        <div id="monitor-status" style="font-size:2.2rem; margin-bottom:30px; text-align:center;"></div>
-        <ul id="shared-monitor-list" class="monitor-list"></ul>
+        <div id="admin-status" class="status-bar"></div>
+        <div class="monitor-container"><ul id="admin-monitor-list" class="monitor-list"></ul></div>
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="startVoting()" style="padding:20px 60px; background:#28a745; color:white; font-size:2rem; border:none; border-radius:15px; cursor:pointer;">開始表決</button>
+            <button onclick="dbConfig.update({showResult:true})" style="padding:20px 40px; background:#007bff; color:white; font-size:1.5rem; border:none; border-radius:15px; margin-left:20px;">顯示結果</button>
+            <button onclick="adminReset()" style="padding:10px 30px; background:#444; color:#ccc; border:none; border-radius:15px; margin-left:20px;">系統重置</button>
+        </div>
     </div>
 
     <script>
@@ -113,124 +111,111 @@
         const urlParams = new URLSearchParams(window.location.search);
         const view = urlParams.get('view');
 
-        if (view === 'admin') document.getElementById('admin-view').style.display = 'block', document.body.classList.add('dark-mode');
-        else if (view === 'monitor') document.getElementById('monitor-view').style.display = 'block', document.body.classList.add('dark-mode'), document.getElementById('display-vote-title').style.display = 'block';
-        else document.getElementById('user-view').style.display = 'flex';
-
-        // 倒計時邏輯
-        function updateTimerDisplay(seconds) {
-            const min = Math.floor(seconds / 60);
-            const sec = seconds % 60;
-            const timeStr = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-            document.getElementById('timer-display').innerText = timeStr;
-            const votedTimer = document.getElementById('voted-countdown');
-            if(votedTimer) votedTimer.innerText = timeStr;
-        }
+        if (view === 'admin') { document.getElementById('admin-view').style.display = 'block'; document.body.classList.add('dark-mode'); }
+        else if (view === 'monitor') { document.getElementById('monitor-view').style.display = 'flex'; document.body.classList.add('dark-mode'); }
+        else { document.getElementById('user-view').style.display = 'flex'; }
 
         db.ref().on('value', (snapshot) => {
             const data = snapshot.val() || {};
-            const config = data.system_config || { isLocked: true, startTime: 0 };
+            const config = data.system_config || { isLocked: true, startTime: 0, voteTitle: "（請輸入議案標題）" };
             const attendance = data.attendance_list || {};
             const votes = data.detailed_votes || {};
 
-            // 處理時間
+            // 倒計時器
+            let remaining = 60;
             if (!config.isLocked && config.startTime > 0) {
-                const elapsed = Math.floor((Date.now() - config.startTime) / 1000);
-                const remaining = Math.max(0, 60 - elapsed);
-                updateTimerDisplay(remaining);
-            } else {
-                updateTimerDisplay(60);
+                remaining = Math.max(0, 60 - Math.floor((Date.now() - config.startTime) / 1000));
             }
+            const timeStr = `00:${remaining.toString().padStart(2, '0')}`;
+            document.getElementById('timer-display').innerText = timeStr;
+            if(document.getElementById('user-timer')) document.getElementById('user-timer').innerText = timeStr;
 
-            // 更新標題
-            document.getElementById('display-vote-title').innerText = config.voteTitle || "";
-
-            // 統計與名單渲染 (略，同之前)
+            // 標題與統計
+            document.getElementById('display-vote-title').innerText = `「${config.voteTitle}」`;
+            let pro = 0, con = 0, att = Object.keys(attendance).length;
             let voterMap = {};
-            Object.values(votes).forEach(v => voterMap[v.name] = v.choice);
-            
-            const renderList = (id) => {
-                const el = document.getElementById(id); if(!el) return;
-                el.innerHTML = "";
+            Object.values(votes).forEach(v => { voterMap[v.name] = v.choice; if(v.choice==='贊成') pro++; else con++; });
+
+            const statusHTML = config.showResult 
+                ? `<span class="color-att">出席：${att}</span> &nbsp; <span class="color-pro">贊成：${pro}</span> &nbsp; <span class="color-con">反對：${con}</span>`
+                : `<span class="color-att">出席：白色</span> &nbsp; <span class="color-pro">贊成：綠色</span> &nbsp; <span class="color-con">反對：紅色</span>`;
+            if(document.getElementById('admin-status')) document.getElementById('admin-status').innerHTML = statusHTML;
+            if(document.getElementById('monitor-status')) document.getElementById('monitor-status').innerHTML = statusHTML;
+
+            // 名單渲染
+            const render = (id) => {
+                const el = document.getElementById(id); if(!el) return; el.innerHTML = "";
                 allowedUsers.forEach((name, i) => {
                     let cls = voterMap[name] ? (voterMap[name]==='贊成'?'v-pro':'v-con') : (attendance[name]?'v-present':'v-row');
-                    el.innerHTML += `<li><span class="${cls}">${(i+1).toString().padStart(3,'0')} ${name}</span></li>`;
+                    el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(i+1).toString().padStart(3,'0')}</span>${name}</span></li>`;
                 });
             };
-            renderList('admin-monitor-list'); renderList('shared-monitor-list');
+            render('admin-monitor-list'); render('shared-monitor-list');
 
-            // 投票者介面切換
+            // 投票端邏輯
             if (!view) {
                 if (currentUserName && voterMap[currentUserName]) {
                     document.getElementById('vote-controls').style.display = 'none';
                     document.getElementById('voted-message').style.display = 'block';
-                    document.getElementById('status-header').innerText = `身分：${currentUserName} (已完成投票)`;
+                    document.getElementById('status-header').innerText = `身分：${currentUserName} (已投票)`;
                 } else {
                     document.getElementById('vote-controls').style.display = 'flex';
                     document.getElementById('voted-message').style.display = 'none';
-                    
                     if (!config.isLocked) {
                         if (currentUserName && attendance[currentUserName]) {
                             isAttended = true;
-                            document.getElementById('att-btn').classList.remove('enabled');
                             document.getElementById('pro-btn').classList.add('enabled');
                             document.getElementById('con-btn').classList.add('enabled');
-                            document.getElementById('status-header').innerText = `核可：${currentUserName}，請投票`;
+                            document.getElementById('status-header').innerText = `核可：${currentUserName}，請投下表決票`;
                         } else {
                             document.getElementById('att-btn').classList.add('enabled');
-                            document.getElementById('status-header').innerText = currentUserName ? `歡迎 ${currentUserName}，請點出席` : "請點擊出席驗證身分";
+                            document.getElementById('status-header').innerText = currentUserName ? `歡迎 ${currentUserName}，請先點出席` : "請驗證身分";
                         }
                     } else {
                         document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
-                        document.getElementById('status-header').innerText = "等待主席開始表決...";
+                        document.getElementById('status-header').innerText = "議案已確認，等待主席開始表決...";
                     }
                 }
             }
         });
 
-        function executeAttendance() {
-            let nameInput = currentUserName || prompt("請輸入姓名：");
-            if (!nameInput || !allowedUsers.includes(nameInput.trim())) return alert("無權限");
-            
-            db.ref('attendance_list').once('value', snap => {
-                if (snap.val() && snap.val()[nameInput] && !currentUserName) {
-                    alert("此身分已在其他裝置使用中");
-                } else {
-                    currentUserName = nameInput.trim();
-                    localStorage.setItem('cssc_user_name', currentUserName);
-                    dbAttendance.child(currentUserName).set(true);
-                }
-            });
-        }
-
-        function executeVote(choice) {
-            if (!isAttended || !currentUserName) return;
-            if (confirm(`確定投給「${choice}」嗎？`)) {
-                dbVotes.push({ name: currentUserName, choice: choice });
-            }
+        function confirmTitle() {
+            const t = document.getElementById('vote-title-input').value.trim();
+            if(!t) return alert("請輸入標題");
+            dbConfig.update({ voteTitle: t, isLocked: true, startTime: 0, showResult: false });
         }
 
         function startVoting() {
-            const t = document.getElementById('vote-title-input').value;
-            if(!t) return alert("請輸入標題");
-            dbConfig.set({ isLocked: false, voteTitle: t, startTime: Date.now(), showResult: false });
+            dbConfig.update({ isLocked: false, startTime: Date.now() });
+        }
+
+        function executeAttendance() {
+            let name = currentUserName || prompt("輸入姓名：");
+            if (!name || !allowedUsers.includes(name.trim())) return alert("無權限");
+            currentUserName = name.trim();
+            localStorage.setItem('cssc_user_name', currentUserName);
+            dbAttendance.child(currentUserName).set(true);
+        }
+
+        function executeVote(c) {
+            if (!isAttended || !currentUserName) return;
+            if (confirm(`確定投給「${c}」？`)) dbVotes.push({ name: currentUserName, choice: c });
         }
 
         function adminReset() {
-            if (prompt("管理密碼：") === "0126") {
+            if (prompt("密碼：") === "0126") {
                 dbVotes.set(null); dbAttendance.set(null);
-                dbConfig.set({ isLocked: true, voteTitle: "", startTime: 0, showResult: false });
+                dbConfig.set({ isLocked: true, voteTitle: "（請輸入議案標題）", startTime: 0, showResult: false });
                 location.reload();
             }
         }
 
-        // 每秒強制更新一次本地計時（防止背景凍結）
         setInterval(() => {
-            dbConfig.child('startTime').once('value', s => {
-                const start = s.val();
-                if (start > 0) {
-                    const rem = Math.max(0, 60 - Math.floor((Date.now() - start) / 1000));
-                    updateTimerDisplay(rem);
+            dbConfig.once('value', s => {
+                const c = s.val() || {};
+                if(!c.isLocked && c.startTime > 0) {
+                    const rem = Math.max(0, 60 - Math.floor((Date.now() - c.startTime) / 1000));
+                    document.getElementById('timer-display').innerText = `00:${rem.toString().padStart(2, '0')}`;
                 }
             });
         }, 1000);

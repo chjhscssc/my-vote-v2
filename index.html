@@ -21,17 +21,23 @@
         .title-right { display: flex; align-items: center; gap: 15px; font-weight: 900; color: #fff; }
         .timer-text-stack { display: flex; flex-direction: column; align-items: center; font-size: 1.8rem; line-height: 1.1; }
         #timer-display { font-size: 3.8rem; color: #ffffff; letter-spacing: 2px; }
+        
+        /* 投票端介面 */
         #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         #status-header { font-size: 2.2rem; margin-bottom: 50px; display: block; font-weight: bold; text-align: center; line-height: 1.4; padding: 0 20px; }
         .text-black { color: #000000; }
         .text-blue { color: #007bff; }
         .text-red { color: #dc3545; }
+        
         .label-box { width: 220px; padding: 15px 0; border-radius: 20px; font-weight: 900; font-size: 3.6rem; text-align: center; color: #000; letter-spacing: 5px; margin-bottom: 25px; }
         .circle-btn { width: 220px; height: 220px; border-radius: 50%; border: none; opacity: 0.15; cursor: not-allowed; pointer-events: none; transition: opacity 0.3s; }
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
+        
+        /* 投票完成訊息（僅限表決中顯示） */
         #voted-message { display: none; text-align: center; background: #121212; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 100; flex-direction: column; justify-content: center; align-items: center; }
         .huge-voted-text { font-size: 5rem; font-weight: 900; color: #28a745; line-height: 1.6; margin-bottom: 50px; }
         .sync-timer-huge { font-size: 10rem; color: #ffffff; font-weight: 900; }
+
         .status-bar { font-size: 2.2rem; font-weight: 900; margin: 15px 0; text-align: center; }
         .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; }
         .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px 60px; list-style: none; padding: 0; margin: 0 auto; font-size: 2.5rem; width: fit-content; }
@@ -44,6 +50,7 @@
 </head>
 <body>
     <div class="system-top-title">臺北市私立靜心高級中學學生會議案表決系統</div>
+    
     <div id="header-section" class="admin-header">
         <div class="title-bar">
             <div id="display-vote-title" class="title-left status-not-started">表決尚未開始</div>
@@ -53,6 +60,7 @@
             </div>
         </div>
     </div>
+
     <div id="user-view">
         <div id="user-initial-content" style="text-align: center;">
             <span id="status-header" class="text-black">*表決尚未開始，請等候主席宣布開始表決*</span>
@@ -67,10 +75,12 @@
             <div id="user-timer-huge" class="sync-timer-huge">01:00</div>
         </div>
     </div>
+
     <div id="monitor-view" style="display:none; flex-direction: column; flex: 1;">
         <div id="monitor-status" class="status-bar"></div>
         <div class="monitor-container"><ul id="shared-monitor-list" class="monitor-list"></ul></div>
     </div>
+
     <div id="admin-view">
         <div class="admin-input-group">
             <textarea id="vote-title-input" class="vote-title-input" placeholder="在此輸入議案標題..."></textarea>
@@ -83,6 +93,7 @@
             <button onclick="adminReset()" style="padding:10px 20px; background:#444; color:#ccc; border:none; border-radius:10px; margin-left:15px; cursor:pointer;">重置</button>
         </div>
     </div>
+
     <script>
         const firebaseConfig = { apiKey: "AIzaSyDvS-8vOwps8G3QgsM34qTh80pUiEPzZ0E", databaseURL: "https://cssc-vote-app-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "cssc-vote-app" };
         firebase.initializeApp(firebaseConfig);
@@ -109,6 +120,7 @@
             let str = (seconds === 60) ? "01:00" : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             if(document.getElementById('timer-display')) document.getElementById('timer-display').innerText = str;
             if(document.getElementById('user-timer-huge')) document.getElementById('user-timer-huge').innerText = str;
+            
             // 倒數結束自動鎖定並顯示結果
             if (view === 'admin' && seconds === 0) {
                 dbConfig.once('value', snap => {
@@ -135,33 +147,35 @@
                 updateClock(Math.max(0, 60 - elapsed));
             } else if (config.isLocked && config.startTime > 0) { updateClock(0); } else { updateClock(60); }
 
-            const titleEl = document.getElementById('display-vote-title');
-            if (titleEl) {
-                titleEl.innerText = config.voteTitle || "表決尚未開始";
-                titleEl.className = config.voteTitle ? "title-left status-active" : "title-left status-not-started";
+            if (document.getElementById('display-vote-title')) {
+                document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
+                document.getElementById('display-vote-title').className = config.voteTitle ? "title-left status-active" : "title-left status-not-started";
             }
 
+            // --- 投票端邏輯修正 ---
             if (!view) {
                 const statusHeader = document.getElementById('status-header');
-                let hasVoted = false;
-                Object.values(votes).forEach(v => { if(v.name === currentUserName) hasVoted = true; });
+                const votedMsg = document.getElementById('voted-message');
+                const mainContent = document.getElementById('user-initial-content');
+                
+                let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
 
-                if (currentUserName && hasVoted) {
-                    document.getElementById('user-initial-content').style.display = 'none';
-                    document.getElementById('voted-message').style.display = 'flex';
-                } else {
-                    document.getElementById('user-initial-content').style.display = 'block';
-                    document.getElementById('voted-message').style.display = 'none';
-                    if (config.isLocked) {
-                        if (config.startTime > 0) { // 時間結束
-                            statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
-                            statusHeader.className = "text-red";
-                        } else { // 尚未開始
-                            statusHeader.innerText = "*表決尚未開始，請等候主席宣布開始表決*";
-                            statusHeader.className = "text-black";
-                        }
-                        document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
+                // 核心改動：如果時間結束 (isLocked 且有 startTime)
+                if (config.isLocked && config.startTime > 0) {
+                    votedMsg.style.display = 'none'; // 強制關閉綠色全螢幕
+                    mainContent.style.display = 'block'; // 回到主畫面
+                    statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
+                    statusHeader.className = "text-red";
+                    document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
+                } 
+                // 如果還在表決中
+                else if (!config.isLocked && config.startTime > 0) {
+                    if (currentUserName && hasVoted) {
+                        mainContent.style.display = 'none';
+                        votedMsg.style.display = 'flex';
                     } else {
+                        mainContent.style.display = 'block';
+                        votedMsg.style.display = 'none';
                         if (currentUserName && attendance[currentUserName]) {
                             isAttended = true;
                             statusHeader.innerText = `核可：${currentUserName}，請投票`;
@@ -178,8 +192,17 @@
                         }
                     }
                 }
+                // 尚未開始
+                else {
+                    votedMsg.style.display = 'none';
+                    mainContent.style.display = 'block';
+                    statusHeader.innerText = "*表決尚未開始，請等候主席宣布開始表決*";
+                    statusHeader.className = "text-black";
+                    document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
+                }
             }
 
+            // 監測端與結果顯示
             let pro = 0, con = 0, att = Object.keys(attendance).length;
             let voterMap = {};
             Object.values(votes).forEach(v => { voterMap[v.name] = v.choice; if(v.choice==='贊成') pro++; else con++; });
@@ -216,7 +239,7 @@
             dbVotes.once('value', (snapshot) => {
                 const votes = snapshot.val() || {};
                 if (Object.values(votes).some(v => v.name === currentUserName)) {
-                    alert("您已投過票。"); location.reload(); return;
+                    alert("您已投過票。"); return;
                 }
                 if (confirm(`確定投給「${c}」？`)) dbVotes.push({ name: currentUserName, choice: c, timestamp: Date.now() });
             });

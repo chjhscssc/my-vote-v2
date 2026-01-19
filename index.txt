@@ -1,3 +1,0 @@
-<h1>連線測試</h1>
-<p>如果你看到這行字，代表 GitHub Pages 運作正常。</p>
-<button style="background: green; color: white; padding: 20px;">測試按鈕</button>

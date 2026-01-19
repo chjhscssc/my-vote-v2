@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>學生會議案表決系統</title>
     
-    <link rel="icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png" type="image/png">
-    <link rel="apple-touch-icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png">
+    <link rel="icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png?v=2" type="image/png">
+    <link rel="apple-touch-icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png?v=2">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -26,7 +26,6 @@
         .timer-text-stack { display: flex; flex-direction: column; align-items: center; font-size: 1.8rem; line-height: 1.1; }
         #timer-display { font-size: 3.8rem; color: #ffffff; letter-spacing: 2px; }
         
-        /* 投票端介面 */
         #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         #status-header { font-size: 2.2rem; margin-bottom: 50px; display: block; font-weight: bold; text-align: center; line-height: 1.4; padding: 0 20px; }
         .text-black { color: #000000; }
@@ -107,13 +106,14 @@
         const dbAttendance = db.ref('attendance_list');
         const dbConfig = db.ref('system_config');
 
-        const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "利政軒", "楊桂愷", "張丞萱"];
+        // 已修正：李致寬
+        const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "李致寬", "楊桂愷", "張丞萱"];
+        
         let currentUserName = localStorage.getItem('cssc_user_name') || "";
         let isAttended = false;
         const urlParams = new URLSearchParams(window.location.search);
         let view = urlParams.get('view');
 
-        // 安全性檢查
         if (view === 'admin' || view === 'monitor') {
             const pwd = prompt(`您正試圖進入${view === 'admin' ? '主席' : '監測'}模式，請輸入管理密碼：`);
             if (pwd !== "0126") {

@@ -25,10 +25,12 @@
         
         /* 選項標籤 */
         .label-box { 
-            width: 120px; padding: 8px 0; background: #f8f9fa; 
+            width: 120px; padding: 8px 0; 
             border: 1px solid #ced4da; border-radius: 4px; 
             font-weight: 600; font-size: 1.1rem; color: #495057;
         }
+        .pro-btn { background-color: #28a745; } /* 贊成：深綠 */
+        .con-btn { background-color: #dc3545; } /* 反對：深紅 */
         
         /* 圓形表決按鈕 */
         .circle-btn { 
@@ -71,11 +73,11 @@
     <div class="vote-section">
         <div class="vote-container">
             <div class="label-box">贊成</div>
-            <button id="pro-btn" class="circle-btn pro-btn" onclick="executeVote('贊成')">✓</button>
+            <button id="pro-btn" class="circle-btn pro-btn" onclick="executeVote('贊成')"></button>
         </div>
         <div class="vote-container">
             <div class="label-box">反對</div>
-            <button id="con-btn" class="circle-btn con-btn" onclick="executeVote('反對')">✕</button>
+            <button id="con-btn" class="circle-btn con-btn" onclick="executeVote('反對')"></button>
         </div>
     </div>
 

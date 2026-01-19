@@ -7,54 +7,62 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* 保持之前的巨大化與垂直置中樣式 */
-        html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; overflow-x: hidden; }
+        html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; overflow: hidden; }
         body.dark-mode { background: #121212; color: #ffffff; }
-        .header { padding: 30px 20px; text-align: center; border-bottom: 2px solid #dee2e6; background: #ffffff; width: 100%; box-sizing: border-box; flex-shrink: 0; }
-        body.dark-mode .header { background: #1a1a1a; border-bottom: 1px solid #333; }
-        .main-title { font-size: 2.2rem; font-weight: 900; display: block; margin-bottom: 5px; }
-        .sub-instruction { font-size: 1.8rem; font-weight: 700; display: block; margin-top: 10px; line-height: 1.4; }
-        #display-vote-title { font-size: 2.5rem; color: #ffc107; display: none; margin-top: 15px; font-weight: 900; text-align: center; white-space: pre-wrap; line-height: 1.3; }
 
-        /* 投票按鈕與方框巨大化 */
-        #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; width: 100%; box-sizing: border-box; }
-        .vote-section { display: flex; justify-content: center; gap: 60px; flex-wrap: wrap; width: 100%; max-width: 1200px; }
-        .vote-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        .label-box { width: 220px; padding: 30px 0; border-radius: 20px; font-weight: 900; font-size: 2.8rem; text-align: center; color: #000; box-shadow: 0 6px 12px rgba(0,0,0,0.15); letter-spacing: 5px; }
+        /* 右上角倒計時器 */
+        #timer-display { position: absolute; top: 20px; right: 30px; font-size: 3rem; font-weight: 900; color: #ffc107; font-family: monospace; z-index: 100; }
+
+        .header { padding: 30px 20px; text-align: center; border-bottom: 2px solid #dee2e6; background: #ffffff; width: 100%; box-sizing: border-box; flex-shrink: 0; position: relative; }
+        body.dark-mode .header { background: #1a1a1a; border-bottom: 1px solid #333; }
+        .main-title { font-size: 2.2rem; font-weight: 900; display: block; }
+        .sub-instruction { font-size: 1.8rem; font-weight: 700; display: block; margin-top: 10px; color: #007bff; }
+        #display-vote-title { font-size: 2.5rem; color: #ffc107; display: none; margin-top: 15px; font-weight: 900; }
+
+        /* 投票介面 */
+        #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .vote-section { display: flex; justify-content: center; gap: 50px; }
+        .vote-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        
+        /* 方框文字極大化 */
+        .label-box { 
+            width: 220px; padding: 15px 0; border-radius: 20px; font-weight: 900; 
+            font-size: 3.8rem; text-align: center; color: #000; box-shadow: 0 6px 12px rgba(0,0,0,0.2); 
+            letter-spacing: 5px; box-sizing: border-box; 
+        }
         .att-label { background-color: #adb5bd; } 
         .pro-label { background-color: #28a745; } 
         .con-label { background-color: #dc3545; } 
-        .circle-btn { width: 220px; height: 220px; border-radius: 50%; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.25); transition: 0.3s; opacity: 0.15; cursor: not-allowed; pointer-events: none; }
-        .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
-        .circle-btn:active { transform: scale(0.9); }
-        .att-btn { background-color: #6c757d; } 
-        .pro-btn { background-color: #28a745; }
-        .con-btn { background-color: #dc3545; }
-        .circle-btn.checked { opacity: 0.4; cursor: not-allowed; pointer-events: none; border: 10px solid #000; }
 
-        /* 監測與控制台樣式 (省略部分樣式以保持簡潔) */
-        #admin-view, #monitor-view { display: none; flex: 1; width: 100%; max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
-        .status-header-text { font-size: 2.2rem; font-weight: 700; text-align: center; border-bottom: 3px solid #333; padding-bottom: 25px; }
-        .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px 60px; list-style: none; padding: 0; font-size: 2.6rem; }
-        .v-row { color: #555; }
-        .v-row.v-present { color: #fff; }
-        .v-row.v-pro { color: #28a745; }
-        .v-row.v-con { color: #dc3545; }
-        .v-num { display: inline-block; width: 80px; font-weight: 900; }
-        .controls { margin-top: 60px; text-align: center; }
-        .action-btn { padding: 25px 60px; font-size: 1.8rem; cursor: pointer; border-radius: 12px; border: none; margin: 0 20px; font-weight: 700; font-family: "標楷體"; }
+        .circle-btn { width: 220px; height: 220px; border-radius: 50%; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); opacity: 0.15; cursor: not-allowed; pointer-events: none; }
+        .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
+        .att-btn { background-color: #6c757d; } .pro-btn { background-color: #28a745; } .con-btn { background-color: #dc3545; }
+
+        /* 完成表決後的畫面 */
+        #voted-message { display: none; text-align: center; padding: 40px; }
+        .voted-text { font-size: 3.5rem; font-weight: 900; color: #28a745; line-height: 1.5; margin-bottom: 20px; }
+        .voted-timer { font-size: 5rem; font-weight: 900; color: #ffc107; font-family: monospace; }
+
+        /* 監測與管理 */
+        #admin-view, #monitor-view { display: none; flex: 1; width: 100%; padding: 40px; box-sizing: border-box; }
+        .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; list-style: none; padding: 0; font-size: 2.5rem; }
+        .v-row { color: #555; } .v-present { color: #fff; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
+        .controls { margin-top: 50px; text-align: center; }
+        .action-btn { padding: 20px 50px; font-size: 1.8rem; cursor: pointer; border-radius: 10px; margin: 0 15px; font-weight: bold; font-family: "標楷體"; }
     </style>
 </head>
 <body id="main-body">
 
+    <div id="timer-display">01:00</div>
+
     <div class="header">
         <span class="main-title">臺北市私立靜心高級中學學生會議案表決系統</span>
         <span id="status-header" class="sub-instruction">*請驗證身分*</span>
-        <div id="display-vote-title">表決尚未開始</div>
+        <div id="display-vote-title"></div>
     </div>
 
     <div id="user-view">
-        <div class="vote-section">
+        <div id="vote-controls" class="vote-section">
             <div class="vote-container">
                 <div class="label-box att-label">出席</div>
                 <button id="att-btn" class="circle-btn att-btn" onclick="executeAttendance()"></button>
@@ -68,23 +76,25 @@
                 <button id="con-btn" class="circle-btn con-btn" onclick="executeVote('反對')"></button>
             </div>
         </div>
+        <div id="voted-message">
+            <div class="voted-text">您已完成表決<br>請靜待主席宣布表決結果</div>
+            <div id="voted-countdown" class="voted-timer">01:00</div>
+        </div>
     </div>
 
     <div id="admin-view">
-        <div style="text-align: center; margin-bottom: 30px;">
-            <textarea id="vote-title-input" style="padding: 20px; font-size: 1.8rem; width: 80%; border-radius: 15px; height: 100px;" placeholder="輸入表決標題"></textarea>
-        </div>
-        <div id="admin-status-text" class="status-header-text"></div>
+        <textarea id="vote-title-input" style="width:100%; height:100px; font-size:1.8rem; margin-bottom:20px; font-family:'標楷體';" placeholder="輸入議案標題..."></textarea>
+        <div id="admin-status" style="font-size:2rem; margin-bottom:20px; text-align:center;"></div>
         <ul id="admin-monitor-list" class="monitor-list"></ul>
         <div class="controls">
-            <button class="action-btn" style="background:#28a745; color:#fff;" onclick="startVoting()">開始表決</button>
-            <button class="action-btn" style="background:#007bff; color:#fff;" onclick="setShowResult(true)">顯示結果</button>
-            <button class="action-btn" style="background:#333; color:#777;" onclick="adminReset()">重置</button>
+            <button class="action-btn" style="background:#28a745; color:white;" onclick="startVoting()">開始表決</button>
+            <button class="action-btn" style="background:#007bff; color:white;" onclick="dbConfig.update({showResult:true})">顯示結果</button>
+            <button class="action-btn" style="background:#444; color:#ccc;" onclick="adminReset()">重置系統</button>
         </div>
     </div>
 
     <div id="monitor-view">
-        <div id="monitor-status-text" class="status-header-text"></div>
+        <div id="monitor-status" style="font-size:2.2rem; margin-bottom:30px; text-align:center;"></div>
         <ul id="shared-monitor-list" class="monitor-list"></ul>
     </div>
 
@@ -97,156 +107,133 @@
         const dbConfig = db.ref('system_config');
 
         const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "李致寬", "楊桂愷", "張丞萱"];
-        let currentUserName = "";
+        let currentUserName = localStorage.getItem('cssc_user_name') || "";
         let isAttended = false;
-        let hasVoted = false;
 
         const urlParams = new URLSearchParams(window.location.search);
         const view = urlParams.get('view');
 
-        // 初始化視圖
-        if (view === 'admin') { document.body.classList.add('dark-mode'); document.getElementById('admin-view').style.display = 'block'; }
-        else if (view === 'monitor') { document.body.classList.add('dark-mode'); document.getElementById('monitor-view').style.display = 'block'; document.getElementById('display-vote-title').style.display = 'block'; }
-        else { document.getElementById('user-view').style.display = 'flex'; }
+        if (view === 'admin') document.getElementById('admin-view').style.display = 'block', document.body.classList.add('dark-mode');
+        else if (view === 'monitor') document.getElementById('monitor-view').style.display = 'block', document.body.classList.add('dark-mode'), document.getElementById('display-vote-title').style.display = 'block';
+        else document.getElementById('user-view').style.display = 'flex';
+
+        // 倒計時邏輯
+        function updateTimerDisplay(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            const timeStr = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+            document.getElementById('timer-display').innerText = timeStr;
+            const votedTimer = document.getElementById('voted-countdown');
+            if(votedTimer) votedTimer.innerText = timeStr;
+        }
 
         db.ref().on('value', (snapshot) => {
             const data = snapshot.val() || {};
-            const votes = data.detailed_votes || {};
+            const config = data.system_config || { isLocked: true, startTime: 0 };
             const attendance = data.attendance_list || {};
-            const config = data.system_config || { showResult: false, isLocked: true, voteTitle: "" };
+            const votes = data.detailed_votes || {};
 
-            // 統計數據
-            let proCount = 0, conCount = 0;
-            let voterChoiceMap = {}; 
-            Object.values(votes).forEach(v => {
-                voterChoiceMap[v.name] = v.choice;
-                if (v.choice === '贊成') proCount++; else conCount++;
-            });
+            // 處理時間
+            if (!config.isLocked && config.startTime > 0) {
+                const elapsed = Math.floor((Date.now() - config.startTime) / 1000);
+                const remaining = Math.max(0, 60 - elapsed);
+                updateTimerDisplay(remaining);
+            } else {
+                updateTimerDisplay(60);
+            }
 
             // 更新標題
-            if(document.getElementById('display-vote-title')) document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
+            document.getElementById('display-vote-title').innerText = config.voteTitle || "";
 
-            // 渲染監測清單
-            const render = (id) => {
-                const el = document.getElementById(id); if(!el) return; el.innerHTML = "";
-                allowedUsers.forEach((name, index) => {
-                    let stateClass = ""; 
-                    if (voterChoiceMap[name]) stateClass = voterChoiceMap[name] === '贊成' ? "v-pro" : "v-con";
-                    else if (attendance[name]) stateClass = "v-present";
-                    el.innerHTML += `<li class="voter-line"><span class="v-row ${stateClass}"><span class="v-num">${(index+1).toString().padStart(3,'0')}</span>&nbsp;${name}</span></li>`;
+            // 統計與名單渲染 (略，同之前)
+            let voterMap = {};
+            Object.values(votes).forEach(v => voterMap[v.name] = v.choice);
+            
+            const renderList = (id) => {
+                const el = document.getElementById(id); if(!el) return;
+                el.innerHTML = "";
+                allowedUsers.forEach((name, i) => {
+                    let cls = voterMap[name] ? (voterMap[name]==='贊成'?'v-pro':'v-con') : (attendance[name]?'v-present':'v-row');
+                    el.innerHTML += `<li><span class="${cls}">${(i+1).toString().padStart(3,'0')} ${name}</span></li>`;
                 });
             };
-            render('admin-monitor-list'); render('shared-monitor-list');
+            renderList('admin-monitor-list'); renderList('shared-monitor-list');
 
-            // 投票者端邏輯優化
-            if (view !== 'admin' && view !== 'monitor') {
-                if (config.isLocked) {
-                    document.getElementById('att-btn').classList.remove('enabled');
-                    document.getElementById('status-header').innerText = "＊表決尚未開始，請等候主席指示＊";
+            // 投票者介面切換
+            if (!view) {
+                if (currentUserName && voterMap[currentUserName]) {
+                    document.getElementById('vote-controls').style.display = 'none';
+                    document.getElementById('voted-message').style.display = 'block';
+                    document.getElementById('status-header').innerText = `身分：${currentUserName} (已完成投票)`;
                 } else {
-                    // 【身分與設備綁定檢查】
-                    let savedName = localStorage.getItem('cssc_user_name');
-                    if (savedName) currentUserName = savedName;
-
-                    if (currentUserName) {
-                        if (voterChoiceMap[currentUserName]) {
-                            hasVoted = true;
-                            // 投過票就永久鎖定按鈕
-                            document.getElementById('pro-btn').className = "circle-btn pro-btn checked";
-                            document.getElementById('con-btn').className = "circle-btn con-btn checked";
-                            document.getElementById('att-btn').className = "circle-btn att-btn checked";
-                            document.getElementById('status-header').innerText = `＊${currentUserName}，您已完成本次表決。＊`;
-                        } else if (attendance[currentUserName]) {
+                    document.getElementById('vote-controls').style.display = 'flex';
+                    document.getElementById('voted-message').style.display = 'none';
+                    
+                    if (!config.isLocked) {
+                        if (currentUserName && attendance[currentUserName]) {
                             isAttended = true;
-                            document.getElementById('att-btn').className = "circle-btn att-btn checked";
+                            document.getElementById('att-btn').classList.remove('enabled');
                             document.getElementById('pro-btn').classList.add('enabled');
                             document.getElementById('con-btn').classList.add('enabled');
-                            document.getElementById('status-header').innerText = `＊身分：${currentUserName}，請投票＊`;
+                            document.getElementById('status-header').innerText = `核可：${currentUserName}，請投票`;
                         } else {
                             document.getElementById('att-btn').classList.add('enabled');
-                            document.getElementById('status-header').innerText = `＊歡迎回來，${currentUserName}，請點出席＊`;
+                            document.getElementById('status-header').innerText = currentUserName ? `歡迎 ${currentUserName}，請點出席` : "請點擊出席驗證身分";
                         }
                     } else {
-                        document.getElementById('att-btn').classList.add('enabled');
-                        document.getElementById('status-header').innerText = "*請點擊出席按鈕驗證身分*";
+                        document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
+                        document.getElementById('status-header').innerText = "等待主席開始表決...";
                     }
                 }
             }
         });
 
         function executeAttendance() {
-            if (isAttended) return;
-
-            // 1. 檢查本地是否已經綁定過姓名
-            let savedName = localStorage.getItem('cssc_user_name');
-            let nameInput = "";
-
-            if (savedName) {
-                // 如果本地有存名字，直接使用，不准他改
-                nameInput = savedName;
-            } else {
-                // 如果是新裝置/新分頁且沒紀錄，才要求輸入
-                nameInput = prompt("請輸入您的姓名以驗證身分：");
-                if (!nameInput) return;
-                nameInput = nameInput.trim();
-            }
-
-            if (!allowedUsers.includes(nameInput)) {
-                alert("錯誤：無此身分權限。");
-                localStorage.removeItem('cssc_user_name');
-                return;
-            }
-
-            // 2. 向雲端資料庫進行二次防弊驗證
-            db.ref().once('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                const attendance = data.attendance_list || {};
-                const votes = data.detailed_votes || {};
-
-                // A. 防止冒名：如果這個名字已經在其他裝置「出席」了，且這台手機沒紀錄，就不准進
-                if (attendance[nameInput] && !savedName) {
-                    alert("錯誤：偵測到「" + nameInput + "」已在其他裝置登入，您無法在此裝置冒用其身分。");
-                    return;
+            let nameInput = currentUserName || prompt("請輸入姓名：");
+            if (!nameInput || !allowedUsers.includes(nameInput.trim())) return alert("無權限");
+            
+            db.ref('attendance_list').once('value', snap => {
+                if (snap.val() && snap.val()[nameInput] && !currentUserName) {
+                    alert("此身分已在其他裝置使用中");
+                } else {
+                    currentUserName = nameInput.trim();
+                    localStorage.setItem('cssc_user_name', currentUserName);
+                    dbAttendance.child(currentUserName).set(true);
                 }
-
-                // B. 防止一機多投：如果這個名字在資料庫已有投票紀錄
-                const hasVotedDB = Object.values(votes).some(v => v.name === nameInput);
-                if (hasVotedDB) {
-                    alert("身分鎖定：「" + nameInput + "」已完成表決，無法更換身分重複投票。");
-                    localStorage.setItem('cssc_user_name', nameInput); // 強制鎖定本地身分
-                    location.reload(); 
-                    return;
-                }
-
-                // 3. 通過驗證，執行設備與姓名綁定
-                currentUserName = nameInput;
-                localStorage.setItem('cssc_user_name', nameInput); 
-                dbAttendance.child(currentUserName).set(true);
-                alert("身分驗證成功：" + currentUserName);
             });
         }
 
         function executeVote(choice) {
-            if (!isAttended || hasVoted) return;
-            if (confirm(`確認投下「${choice}」？`)) {
-                dbVotes.push({ name: currentUserName, choice: choice, timestamp: Date.now() });
+            if (!isAttended || !currentUserName) return;
+            if (confirm(`確定投給「${choice}」嗎？`)) {
+                dbVotes.push({ name: currentUserName, choice: choice });
             }
         }
 
-        // 主席控制功能 (保持不變)
         function startVoting() {
-            const title = document.getElementById('vote-title-input').value.trim();
-            if (!title) return alert("請輸入標題");
-            dbConfig.update({ isLocked: false, voteTitle: title, showResult: false });
+            const t = document.getElementById('vote-title-input').value;
+            if(!t) return alert("請輸入標題");
+            dbConfig.set({ isLocked: false, voteTitle: t, startTime: Date.now(), showResult: false });
         }
-        function setShowResult(val) { dbConfig.update({ showResult: val }); }
+
         function adminReset() {
             if (prompt("管理密碼：") === "0126") {
                 dbVotes.set(null); dbAttendance.set(null);
-                dbConfig.set({ showResult: false, isLocked: true, voteTitle: "" });
+                dbConfig.set({ isLocked: true, voteTitle: "", startTime: 0, showResult: false });
                 location.reload();
             }
         }
+
+        // 每秒強制更新一次本地計時（防止背景凍結）
+        setInterval(() => {
+            dbConfig.child('startTime').once('value', s => {
+                const start = s.val();
+                if (start > 0) {
+                    const rem = Math.max(0, 60 - Math.floor((Date.now() - start) / 1000));
+                    updateTimerDisplay(rem);
+                }
+            });
+        }, 1000);
     </script>
 </body>
 </html>

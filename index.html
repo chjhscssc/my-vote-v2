@@ -9,77 +9,29 @@
     <style>
         html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; overflow: hidden; }
         body.admin-mode { background: #121212; color: #ffffff; }
-
         .system-top-title { text-align: center; font-size: 2.5rem; font-weight: 900; padding: 25px 0 10px 0; letter-spacing: 4px; }
         body.admin-mode .system-top-title { color: #fff; }
-
-        /* --- 標頭區 (Admin/Monitor) --- */
         .admin-header { display: none; padding-bottom: 20px; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
-        
-        .title-bar { 
-            display: flex; 
-            align-items: center; 
-            width: 100%; 
-            height: 120px; 
-        }
-
-        .title-left { 
-            flex: 3; 
-            color: #ffc107; 
-            font-weight: 900; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            font-size: clamp(1.2rem, 3.5vw, 2.3rem); 
-            transition: all 0.3s ease; 
-        }
+        .title-bar { display: flex; align-items: center; width: 100%; height: 120px; }
+        .title-left { flex: 3; color: #ffc107; font-weight: 900; white-space: nowrap; overflow: hidden; font-size: clamp(1.2rem, 3.5vw, 2.3rem); transition: all 0.3s ease; }
         .status-not-started { padding-left: 31%; }
         .status-active { padding-left: 8%; }
-
-        .header-right-group { 
-            flex: 3; 
-            display: flex; 
-            align-items: center; 
-            justify-content: flex-start; 
-            gap: 60px; 
-        }
-
-        /* 修正對齊與大小 */
-        .title-mid { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: flex-start; /* 讓內容靠左對齊，使記名對齊表字 */
-            justify-content: center;
-            font-size: 1.8rem; 
-            font-weight: 900; 
-            line-height: 1.3; 
-            color: #fff; 
-        }
-
-        .title-right { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            font-weight: 900; 
-            color: #fff; 
-        }
-
+        .header-right-group { flex: 3; display: flex; align-items: center; justify-content: flex-start; gap: 60px; }
+        .title-mid { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; font-size: 1.8rem; font-weight: 900; line-height: 1.3; color: #fff; }
+        .title-right { display: flex; align-items: center; gap: 15px; font-weight: 900; color: #fff; }
         .timer-text-stack { display: flex; flex-direction: column; align-items: center; font-size: 1.8rem; line-height: 1.1; }
         #timer-display { font-size: 3.8rem; color: #ffffff; letter-spacing: 2px; }
-
-        /* --- 投票端介面 --- */
         #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
-        #status-header { font-size: 2.2rem; margin-bottom: 50px; display: block; font-weight: bold; text-align: center; line-height: 1.4; }
+        #status-header { font-size: 2.2rem; margin-bottom: 50px; display: block; font-weight: bold; text-align: center; line-height: 1.4; padding: 0 20px; }
         .text-black { color: #000000; }
         .text-blue { color: #007bff; }
-
+        .text-red { color: #dc3545; }
         .label-box { width: 220px; padding: 15px 0; border-radius: 20px; font-weight: 900; font-size: 3.6rem; text-align: center; color: #000; letter-spacing: 5px; margin-bottom: 25px; }
         .circle-btn { width: 220px; height: 220px; border-radius: 50%; border: none; opacity: 0.15; cursor: not-allowed; pointer-events: none; transition: opacity 0.3s; }
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
-
         #voted-message { display: none; text-align: center; background: #121212; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 100; flex-direction: column; justify-content: center; align-items: center; }
         .huge-voted-text { font-size: 5rem; font-weight: 900; color: #28a745; line-height: 1.6; margin-bottom: 50px; }
         .sync-timer-huge { font-size: 10rem; color: #ffffff; font-weight: 900; }
-
         .status-bar { font-size: 2.2rem; font-weight: 900; margin: 15px 0; text-align: center; }
         .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; }
         .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px 60px; list-style: none; padding: 0; margin: 0 auto; font-size: 2.5rem; width: fit-content; }
@@ -91,25 +43,16 @@
     </style>
 </head>
 <body>
-
     <div class="system-top-title">臺北市私立靜心高級中學學生會議案表決系統</div>
-
     <div id="header-section" class="admin-header">
         <div class="title-bar">
             <div id="display-vote-title" class="title-left status-not-started">表決尚未開始</div>
             <div class="header-right-group">
-                <div class="title-mid">
-                    <div>表決型態</div>
-                    <div>記名</div>
-                </div>
-                <div class="title-right">
-                    <div class="timer-text-stack"><span>倒數</span><span>計時</span></div>
-                    <div id="timer-display">01:00</div>
-                </div>
+                <div class="title-mid"><div>表決型態</div><div>記名</div></div>
+                <div class="title-right"><div class="timer-text-stack"><span>倒數</span><span>計時</span></div><div id="timer-display">01:00</div></div>
             </div>
         </div>
     </div>
-
     <div id="user-view">
         <div id="user-initial-content" style="text-align: center;">
             <span id="status-header" class="text-black">*表決尚未開始，請等候主席宣布開始表決*</span>
@@ -124,12 +67,10 @@
             <div id="user-timer-huge" class="sync-timer-huge">01:00</div>
         </div>
     </div>
-
     <div id="monitor-view" style="display:none; flex-direction: column; flex: 1;">
         <div id="monitor-status" class="status-bar"></div>
         <div class="monitor-container"><ul id="shared-monitor-list" class="monitor-list"></ul></div>
     </div>
-
     <div id="admin-view">
         <div class="admin-input-group">
             <textarea id="vote-title-input" class="vote-title-input" placeholder="在此輸入議案標題..."></textarea>
@@ -139,11 +80,9 @@
         <div class="monitor-container"><ul id="admin-monitor-list" class="monitor-list"></ul></div>
         <div style="text-align: center; margin-top: 20px;">
             <button onclick="startVoting()" style="padding:15px 50px; background:#28a745; color:white; font-size:1.8rem; border:none; border-radius:10px; cursor:pointer;">開始表決</button>
-            <button onclick="dbConfig.update({showResult:true})" style="padding:15px 30px; background:#ffc107; color:black; font-size:1.5rem; border:none; border-radius:10px; margin-left:15px; cursor:pointer;">顯示結果</button>
             <button onclick="adminReset()" style="padding:10px 20px; background:#444; color:#ccc; border:none; border-radius:10px; margin-left:15px; cursor:pointer;">重置</button>
         </div>
     </div>
-
     <script>
         const firebaseConfig = { apiKey: "AIzaSyDvS-8vOwps8G3QgsM34qTh80pUiEPzZ0E", databaseURL: "https://cssc-vote-app-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "cssc-vote-app" };
         firebase.initializeApp(firebaseConfig);
@@ -155,7 +94,6 @@
         const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "李致寬", "楊桂愷", "張丞萱"];
         let currentUserName = localStorage.getItem('cssc_user_name') || "";
         let isAttended = false;
-
         const urlParams = new URLSearchParams(window.location.search);
         const view = urlParams.get('view');
 
@@ -164,28 +102,38 @@
             document.getElementById('header-section').style.display = 'block';
             if(view === 'admin') document.getElementById('admin-view').style.display = 'block';
             else document.getElementById('monitor-view').style.display = 'flex';
-        } else {
-            document.getElementById('user-view').style.display = 'flex';
-        }
+        } else { document.getElementById('user-view').style.display = 'flex'; }
 
         function updateClock(seconds) {
-            let m = Math.floor(seconds / 60);
-            let s = seconds % 60;
+            let m = Math.floor(seconds / 60), s = seconds % 60;
             let str = (seconds === 60) ? "01:00" : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             if(document.getElementById('timer-display')) document.getElementById('timer-display').innerText = str;
             if(document.getElementById('user-timer-huge')) document.getElementById('user-timer-huge').innerText = str;
+            // 倒數結束自動鎖定並顯示結果
+            if (view === 'admin' && seconds === 0) {
+                dbConfig.once('value', snap => {
+                    const c = snap.val();
+                    if(!c.isLocked && c.startTime > 0) dbConfig.update({ isLocked: true, showResult: true });
+                });
+            }
         }
 
         db.ref().on('value', (snapshot) => {
             const data = snapshot.val() || {};
-            const config = data.system_config || { isLocked: true, startTime: 0, voteTitle: "" };
+            const config = data.system_config || { isLocked: true, startTime: 0, voteTitle: "", resetSignal: 0 };
             const attendance = data.attendance_list || {};
             const votes = data.detailed_votes || {};
+
+            // 監聽重置訊號
+            if (!view && config.resetSignal) {
+                dbConfig.update({ resetSignal: 0 }); 
+                location.reload(); 
+            }
 
             if (!config.isLocked && config.startTime > 0) {
                 const elapsed = Math.floor((Date.now() - config.startTime) / 1000);
                 updateClock(Math.max(0, 60 - elapsed));
-            } else { updateClock(60); }
+            } else if (config.isLocked && config.startTime > 0) { updateClock(0); } else { updateClock(60); }
 
             const titleEl = document.getElementById('display-vote-title');
             if (titleEl) {
@@ -205,8 +153,13 @@
                     document.getElementById('user-initial-content').style.display = 'block';
                     document.getElementById('voted-message').style.display = 'none';
                     if (config.isLocked) {
-                        statusHeader.innerText = "*表決尚未開始，請等候主席宣布開始表決*";
-                        statusHeader.className = "text-black";
+                        if (config.startTime > 0) { // 時間結束
+                            statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
+                            statusHeader.className = "text-red";
+                        } else { // 尚未開始
+                            statusHeader.innerText = "*表決尚未開始，請等候主席宣布開始表決*";
+                            statusHeader.className = "text-black";
+                        }
                         document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
                     } else {
                         if (currentUserName && attendance[currentUserName]) {
@@ -250,7 +203,7 @@
             const t = document.getElementById('vote-title-input').value.trim();
             dbConfig.update({ voteTitle: t, isLocked: true, startTime: 0, showResult: false });
         }
-        function startVoting() { dbConfig.update({ isLocked: false, startTime: Date.now() }); }
+        function startVoting() { dbConfig.update({ isLocked: false, startTime: Date.now(), showResult: false }); }
         function executeAttendance() {
             let name = currentUserName || prompt("輸入姓名：");
             if (!name || !allowedUsers.includes(name.trim())) return alert("名單中無此姓名");
@@ -271,9 +224,8 @@
         function adminReset() {
             if (prompt("管理密碼：") === "0126") {
                 dbVotes.set(null); dbAttendance.set(null);
-                dbConfig.set({ isLocked: true, voteTitle: "", startTime: 0, showResult: false });
-                localStorage.removeItem('cssc_user_name');
-                location.reload();
+                dbConfig.set({ isLocked: true, voteTitle: "", startTime: 0, showResult: false, resetSignal: 1 });
+                if(view === 'admin') location.reload();
             }
         }
         setInterval(() => {

@@ -9,74 +9,91 @@
     <style>
         body { margin: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background: #f8f9fa; color: #212529; line-height: 1.6; }
         
-        /* 頁首與身份確認區 */
-        .header { padding: 40px 20px; background: #ffffff; border-bottom: 1px solid #dee2e6; text-align: center; }
-        .status-header { font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; color: #495057; }
-        .attendance-btn { 
-            padding: 12px 40px; font-size: 1.1rem; background: #0056b3; color: #ffffff; 
-            border: none; border-radius: 4px; cursor: pointer; transition: background 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .attendance-btn.checked { background: #6c757d; cursor: not-allowed; }
+        /* 頁首標題 */
+        .header { padding: 30px 20px 10px; background: #ffffff; text-align: center; }
+        .status-header { font-size: 1.5rem; font-weight: 600; color: #495057; }
 
-        /* 表決操作區 */
-        .vote-section { display: flex; justify-content: center; gap: 50px; padding: 50px 10px; background: #ffffff; }
+        /* 三大操作區（左到右：出席、贊成、反對） */
+        .vote-section { 
+            display: flex; 
+            justify-content: center; 
+            gap: 30px; 
+            padding: 40px 10px; 
+            background: #ffffff; 
+            border-bottom: 1px solid #dee2e6;
+        }
         .vote-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
-        /* 選項標籤 */
+        /* 統一的方框樣式 */
         .label-box { 
-            width: 120px; padding: 8px 0; 
-            border: 1px solid #ced4da; border-radius: 4px; 
-            font-weight: 600; font-size: 1.1rem; color: #495057;
+            width: 140px; 
+            padding: 12px 0; 
+            background: #ffffff; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            font-size: 1.4rem;
+            text-align: center;
+            box-sizing: border-box;
         }
-        .pro-btn { background-color: #28a745; } /* 贊成：深綠 */
-        .con-btn { background-color: #dc3545; } /* 反對：深紅 */
         
-        /* 圓形表決按鈕 */
+        /* 顏色區分 (出席改為灰色) */
+        .att-label { border: 3px solid #6c757d; color: #6c757d; }
+        .pro-label { border: 3px solid #28a745; color: #28a745; }
+        .con-label { border: 3px solid #dc3545; color: #dc3545; }
+        
+        /* 統一的圓形按鈕樣式 */
         .circle-btn { 
             width: 140px; height: 140px; border-radius: 50%; border: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-size: 3.5rem;
-            color: #ffffff; transition: all 0.3s ease;
-            opacity: 0.15; pointer-events: none; /* 預設禁用 */
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .circle-btn.enabled { opacity: 1; pointer-events: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .circle-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+        .circle-btn:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
         .circle-btn:active { transform: translateY(0); }
         
-        .pro-btn { background-color: #28a745; } /* 贊成：深綠 */
-        .con-btn { background-color: #dc3545; } /* 反對：深紅 */
+        /* 按鈕顏色 (出席改為灰色) */
+        .att-btn { background-color: #6c757d; opacity: 1; } 
+        .pro-btn { background-color: #28a745; opacity: 0.15; pointer-events: none; }
+        .con-btn { background-color: #dc3545; opacity: 0.15; pointer-events: none; }
+        
+        /* 啟用狀態 */
+        .circle-btn.enabled { opacity: 1; pointer-events: auto; }
+        /* 出席後標記狀態 */
+        .circle-btn.checked { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* 統計數據看板 */
+        /* 統計看板 */
         .dashboard { max-width: 800px; margin: 30px auto; padding: 0 20px 60px; }
         .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
         .summary-card { background: #ffffff; padding: 25px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center; }
         .count-num { font-size: 3rem; font-weight: 700; display: block; margin: 10px 0; }
         .name-list { font-size: 0.95rem; color: #6c757d; min-height: 1.2rem; word-break: break-all; }
         
-        /* 明細清單 */
         .detail-container { background: #ffffff; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden; }
-        .detail-header { background: #f8f9fa; padding: 12px 20px; font-weight: 600; border-bottom: 1px solid #dee2e6; text-align: left; }
+        .detail-header { background: #f8f9fa; padding: 12px 20px; font-weight: 600; border-bottom: 1px solid #dee2e6; }
         .vote-item { padding: 12px 20px; border-bottom: 1px solid #f1f3f5; display: flex; justify-content: space-between; align-items: center; }
-        .vote-item:last-child { border-bottom: none; }
         .tag { padding: 4px 12px; border-radius: 3px; color: #ffffff; font-size: 0.85rem; font-weight: 500; }
 
-        .admin-reset { margin-top: 80px; color: #adb5bd; cursor: pointer; font-size: 0.8rem; text-decoration: underline; }
+        .admin-reset { margin-top: 80px; color: #adb5bd; cursor: pointer; font-size: 0.8rem; text-decoration: underline; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div id="status-header" class="status-header">議案表決系統：請先完成出席確認</div>
-        <button id="att-btn" class="attendance-btn" onclick="executeAttendance()">確認出席</button>
+        <div id="status-header" class="status-header">議案表決系統：請先點擊灰色圓圈確認出席</div>
     </div>
 
     <div class="vote-section">
         <div class="vote-container">
-            <div class="label-box">贊成</div>
+            <div id="att-label-text" class="label-box att-label">出席</div>
+            <button id="att-btn" class="circle-btn att-btn" onclick="executeAttendance()"></button>
+        </div>
+
+        <div class="vote-container">
+            <div class="label-box pro-label">贊成</div>
             <button id="pro-btn" class="circle-btn pro-btn" onclick="executeVote('贊成')"></button>
         </div>
+
         <div class="vote-container">
-            <div class="label-box">反對</div>
+            <div class="label-box con-label">反對</div>
             <button id="con-btn" class="circle-btn con-btn" onclick="executeVote('反對')"></button>
         </div>
     </div>
@@ -106,6 +123,7 @@
     </div>
 
     <script>
+        // Firebase 設定
         const firebaseConfig = {
             apiKey: "AIzaSyDvS-8vOwps8G3QgsM34qTh80pUiEPzZ0E",
             databaseURL: "https://cssc-vote-app-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -116,39 +134,36 @@
 
         let currentUserName = "";
 
-        // 身份確認程序
         function executeAttendance() {
             if (localStorage.getItem('voted_name')) {
                 alert("系統紀錄顯示您已完成表決。");
                 return;
             }
-            
             let nameInput = prompt("請輸入您的姓名以確認出席身份：");
             if (!nameInput || nameInput.trim() === "") {
                 alert("未輸入姓名，身份確認失敗。");
                 return;
             }
-
             currentUserName = nameInput.trim();
             
-            // 介面鎖定與權限開啟
             const attBtn = document.getElementById('att-btn');
-            attBtn.innerText = "已確認出席：" + currentUserName;
+            const attLabel = document.getElementById('att-label-text');
+            
             attBtn.classList.add('checked');
             attBtn.disabled = true;
-            document.getElementById('status-header').innerText = "身份已確認，請進行議案表決";
+            attLabel.innerText = currentUserName; 
+            
+            document.getElementById('status-header').innerText = "身份已確認，請選擇贊成或反對";
             
             document.getElementById('pro-btn').classList.add('enabled');
             document.getElementById('con-btn').classList.add('enabled');
         }
 
-        // 表決執行程序
         function executeVote(choice) {
             if (!currentUserName) {
-                alert("請先完成出席確認程序。");
+                alert("請先點擊灰色圓圈完成出席確認。");
                 return;
             }
-
             if (confirm(`確認針對本議案投下「${choice}」票？`)) {
                 db.push({
                     name: currentUserName,
@@ -162,18 +177,14 @@
             }
         }
 
-        // 數據即時同步
         db.on('value', (snapshot) => {
             const listDiv = document.getElementById('detail-list');
             listDiv.innerHTML = "";
-            
             let proNames = [], conNames = [];
-
             snapshot.forEach((child) => {
                 const data = child.val();
                 if (data.choice === '贊成') proNames.push(data.name);
-                else conNames.push(data.name);
-
+                else if (data.choice === '反對') conNames.push(data.name);
                 const color = data.choice === '贊成' ? '#28a745' : '#dc3545';
                 listDiv.innerHTML += `
                     <div class="vote-item">
@@ -182,7 +193,6 @@
                     </div>
                 `;
             });
-
             document.getElementById('pro-total').innerText = proNames.length;
             document.getElementById('pro-names').innerText = proNames.length > 0 ? "名單：" + proNames.join('、') : "";
             document.getElementById('con-total').innerText = conNames.length;
@@ -191,6 +201,7 @@
         });
 
         function adminReset() {
+            // 密碼已更新為 0126
             if (prompt("請輸入管理權限密碼：") === "0126") {
                 if (confirm("警告：此操作將永久清除所有原始表決數據，是否繼續？")) {
                     db.set(null);

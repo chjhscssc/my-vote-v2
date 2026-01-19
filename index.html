@@ -18,7 +18,6 @@
         .main-title { font-size: 2.5rem; font-weight: 900; display: block; margin-bottom: 15px; color: #000; }
         body.dark-mode .main-title { color: #fff; }
 
-        /* 監測端文字樣式 */
         .sub-instruction { 
             font-size: 1.4rem; 
             font-weight: 700; 
@@ -29,12 +28,11 @@
         }
         body.dark-mode .sub-instruction { font-size: 2rem; color: #fff; }
 
-        /* 表決標題樣式 (現在移到下方) */
         #display-vote-title { 
             font-size: 2rem; 
             color: #ffc107; 
             display: none; 
-            margin-top: 20px; 
+            margin-top: 30px; 
             font-weight: 900; 
             text-align: center;
         }
@@ -67,16 +65,27 @@
         .con-btn { background-color: #dc3545; }
         .circle-btn.checked { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-        /* 列表樣式 */
-        #admin-view, #monitor-view { display: none; max-width: 850px; margin: 40px auto; padding: 0 20px 80px; }
+        /* 列表版面修改：改為 4 直排 Grid */
+        #admin-view, #monitor-view { display: none; max-width: 1100px; margin: 40px auto; padding: 0 20px 80px; }
         .status-header-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 35px; text-align: center; line-height: 1.8; border-bottom: 2px solid #333; padding-bottom: 20px; }
-        .monitor-list { list-style: none; padding: 0; font-size: 2rem; line-height: 2.5; }
         
-        .v-row { color: #555; transition: 0.3s; }
+        .monitor-list { 
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 直排 */
+            grid-template-rows: repeat(2, auto);    /* 每排 2 人 */
+            gap: 20px 40px;
+            list-style: none; 
+            padding: 0; 
+            font-size: 2.2rem; 
+            line-height: 1.5; 
+        }
+        
+        .voter-line { text-align: left; }
+        .v-row { color: #555; transition: 0.3s; white-space: nowrap; }
         .v-row.v-present { color: #fff; }
         .v-row.v-pro { color: #28a745; }
         .v-row.v-con { color: #dc3545; }
-        .v-num { display: inline-block; width: 80px; }
+        .v-num { display: inline-block; width: 60px; font-weight: 900; }
 
         .controls { margin-top: 50px; text-align: center; }
         .action-btn { padding: 15px 40px; font-size: 1.4rem; cursor: pointer; border-radius: 8px; border: none; font-family: "標楷體"; margin: 0 10px; font-weight: 700; }
@@ -175,14 +184,9 @@
                 if (v.choice === '贊成') proCount++; else conCount++;
             });
 
-            // 更新監測畫面與主席畫面的標題
             const currentTitle = config.voteTitle || "表決尚未開始";
-            if(document.getElementById('display-vote-title')) {
-                document.getElementById('display-vote-title').innerText = currentTitle;
-            }
-            if(document.getElementById('display-vote-title-admin')) {
-                document.getElementById('display-vote-title-admin').innerText = currentTitle;
-            }
+            if(document.getElementById('display-vote-title')) document.getElementById('display-vote-title').innerText = currentTitle;
+            if(document.getElementById('display-vote-title-admin')) document.getElementById('display-vote-title-admin').innerText = currentTitle;
 
             const render = (id) => {
                 const el = document.getElementById(id);
@@ -193,7 +197,7 @@
                     if (voterChoiceMap[name]) stateClass = voterChoiceMap[name] === '贊成' ? "v-pro" : "v-con";
                     else if (attendance[name]) stateClass = "v-present";
                     const formattedNum = (index + 1).toString().padStart(3, '0');
-                    el.innerHTML += `<li class="voter-line"><span class="v-row ${stateClass}"><span class="v-num">${formattedNum}</span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${name}</span></span></li>`;
+                    el.innerHTML += `<li class="voter-line"><span class="v-row ${stateClass}"><span class="v-num">${formattedNum}</span>&nbsp;&nbsp;<span>${name}</span></span></li>`;
                 });
             };
             render('admin-monitor-list');
@@ -266,7 +270,7 @@
                 dbAttendance.set(null);
                 dbConfig.set({ showResult: false, isLocked: true, voteTitle: "" });
                 document.getElementById('vote-title-input').value = "";
-                alert("系統已重設並重新鎖定投票。");
+                alert("系統已重設。");
                 location.reload();
             }
         }

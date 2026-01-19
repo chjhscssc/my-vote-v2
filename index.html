@@ -10,8 +10,11 @@
         html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; overflow: hidden; }
         body.dark-mode { background: #121212; color: #ffffff; }
 
+        /* 網頁最上方大標題 */
+        .system-top-title { text-align: center; font-size: 1.8rem; font-weight: 900; padding: 15px 0 5px 0; letter-spacing: 2px; }
+
         /* 標頭：三欄式精確對齊 */
-        .header { padding: 30px 0; border-bottom: 2px solid #dee2e6; background: #ffffff; width: 100%; box-sizing: border-box; flex-shrink: 0; }
+        .header { padding: 10px 0 30px 0; border-bottom: 2px solid #dee2e6; background: #ffffff; width: 100%; box-sizing: border-box; flex-shrink: 0; }
         body.dark-mode .header { background: #1a1a1a; border-bottom: 1px solid #333; }
         
         .title-bar { display: flex; align-items: center; width: 100%; }
@@ -19,23 +22,22 @@
         /* 標題：換行靠左對齊，縮進 8% */
         .title-left { flex: 3; padding-left: 8%; font-size: 2.2rem; color: #ffc107; font-weight: 900; text-align: left; line-height: 1.3; }
         
-        /* 表決/記名：上下對齊 */
-        .title-mid { flex: 0.8; display: flex; flex-direction: column; align-items: center; font-size: 1.8rem; font-weight: 900; line-height: 1.1; }
+        /* 表決型態 / 記名：上下對齊 */
+        .title-mid { flex: 1.2; display: flex; flex-direction: column; align-items: center; font-size: 1.8rem; font-weight: 900; line-height: 1.2; }
+        .type-label-group { position: relative; width: 80px; text-align: left; }
+        .type-sub { margin-left: 0; } /* 確保記名對齊表決 */
         
         /* 倒數/計時 + 數字：上下對齊後緊接數字 */
         .title-right { flex: 2; display: flex; align-items: center; justify-content: flex-start; gap: 15px; font-weight: 900; }
         .timer-text-stack { display: flex; flex-direction: column; align-items: center; font-size: 1.8rem; line-height: 1.1; }
         #timer-display { font-size: 3.8rem; color: #ffc107; font-family: "標楷體"; letter-spacing: 2px; }
 
-        /* 狀態統計 */
+        /* 狀態統計與名單 (其餘樣式維持一致) */
         .status-bar { font-size: 2.2rem; font-weight: 900; margin: 20px 0; text-align: center; }
         .color-att { color: #ffffff; } .color-pro { color: #28a745; } .color-con { color: #dc3545; }
-
-        /* 名單：完全水平置中 */
         .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; }
         .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px 60px; list-style: none; padding: 0; margin: 0 auto; font-size: 2.5rem; width: fit-content; }
-        .v-row { color: #555; font-weight: 900; }
-        .v-present { color: #fff; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
+        .v-row { color: #555; font-weight: 900; } .v-present { color: #fff; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
         .v-num { display: inline-block; width: 60px; }
 
         /* 投票端 */
@@ -44,11 +46,10 @@
         .att-label { background-color: #adb5bd; } .pro-label { background-color: #28a745; } .con-label { background-color: #dc3545; }
         .circle-btn { width: 220px; height: 220px; border-radius: 50%; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); opacity: 0.15; cursor: not-allowed; pointer-events: none; }
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
-        
         #voted-message { display: none; text-align: center; }
         .voted-text { font-size: 3.2rem; font-weight: 900; color: #28a745; line-height: 1.6; }
 
-        /* 行政端輸入 */
+        /* 行政端 */
         #admin-view { display: none; padding: 30px; }
         .admin-input-group { display: flex; gap: 20px; margin-bottom: 20px; justify-content: center; }
         .vote-title-input { width: 60%; height: 60px; font-size: 1.5rem; padding: 10px; font-family: '標楷體'; }
@@ -57,12 +58,15 @@
 <body id="main-body">
 
     <div class="header">
+        <div class="system-top-title">臺北市私立靜心高級中學學生會議案表決系統</div>
         <div class="title-bar">
-            <div id="display-vote-title" class="title-left">「（請輸入議案標題）」</div>
+            <div id="display-vote-title" class="title-left">「表決尚未開始」</div>
             
             <div class="title-mid">
-                <span>表決</span>
-                <span>記名</span>
+                <div class="type-label-group">
+                    <div>表決型態</div>
+                    <div class="type-sub">記名</div>
+                </div>
             </div>
             
             <div class="title-right">
@@ -127,7 +131,6 @@
         function updateClock(seconds) {
             let m = Math.floor(seconds / 60);
             let s = seconds % 60;
-            // 修正為 01:00 邏輯
             let str = (seconds === 60) ? "01:00" : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             document.getElementById('timer-display').innerText = str;
             if(document.getElementById('user-timer')) document.getElementById('user-timer').innerText = str;
@@ -135,19 +138,16 @@
 
         db.ref().on('value', (snapshot) => {
             const data = snapshot.val() || {};
-            const config = data.system_config || { isLocked: true, startTime: 0, voteTitle: "（請輸入議案標題）" };
+            const config = data.system_config || { isLocked: true, startTime: 0, voteTitle: "" };
             const attendance = data.attendance_list || {};
             const votes = data.detailed_votes || {};
 
             if (!config.isLocked && config.startTime > 0) {
                 const elapsed = Math.floor((Date.now() - config.startTime) / 1000);
                 updateClock(Math.max(0, 60 - elapsed));
-            } else {
-                updateClock(60);
-            }
+            } else { updateClock(60); }
 
-            // 標題靠左換行
-            document.getElementById('display-vote-title').innerText = `「${config.voteTitle}」`;
+            document.getElementById('display-vote-title').innerText = config.voteTitle ? `「${config.voteTitle}」` : "「表決尚未開始」";
             
             let pro = 0, con = 0, att = Object.keys(attendance).length;
             let voterMap = {};
@@ -187,7 +187,7 @@
                         }
                     } else {
                         document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
-                        document.getElementById('status-header').innerText = "等候主席啟動表決計時...";
+                        document.getElementById('status-header').innerText = "等候主席啟動計時...";
                     }
                 }
             }
@@ -219,7 +219,7 @@
         function adminReset() {
             if (prompt("管理密碼：") === "0126") {
                 dbVotes.set(null); dbAttendance.set(null);
-                dbConfig.set({ isLocked: true, voteTitle: "（請輸入議案標題）", startTime: 0, showResult: false });
+                dbConfig.set({ isLocked: true, voteTitle: "", startTime: 0, showResult: false });
                 location.reload();
             }
         }

@@ -16,7 +16,6 @@
             line-height: 1.6; 
         }
         
-        /* 頁首標題區塊 */
         .header { padding: 40px 20px 20px; background: #ffffff; text-align: center; border-bottom: 1px solid #dee2e6; }
         .status-header { 
             font-size: 1.8rem; 
@@ -25,7 +24,6 @@
             white-space: pre-line; 
         }
 
-        /* 三大操作區 */
         .vote-section { 
             display: flex; 
             justify-content: center; 
@@ -36,25 +34,23 @@
         }
         .vote-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
-        /* 標籤方框 (顏色填滿，移除黑色外框，字體再加大) */
         .label-box { 
             width: 140px; 
             padding: 15px 0; 
             border-radius: 8px; 
             font-weight: 700; 
-            font-size: 1.8rem; /* 字體進一步加大 */
+            font-size: 1.8rem; 
             text-align: center;
             box-sizing: border-box;
             color: #000000; 
-            border: none; /* 移除外框 */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 加入輕微陰影增加層次感 */
+            border: none; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
-        .att-label { background-color: #adb5bd; } /* 出席：灰色 */
-        .pro-label { background-color: #28a745; } /* 贊成：綠色 */
-        .con-label { background-color: #dc3545; } /* 反對：紅色 */
+        .att-label { background-color: #adb5bd; } 
+        .pro-label { background-color: #28a745; } 
+        .con-label { background-color: #dc3545; } 
         
-        /* 圓形按鈕 */
         .circle-btn { 
             width: 140px; height: 140px; border-radius: 50%; border: none; cursor: pointer;
             transition: all 0.3s ease;
@@ -70,7 +66,6 @@
         .circle-btn.enabled { opacity: 1; pointer-events: auto; }
         .circle-btn.checked { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* 統計看板 */
         .dashboard { max-width: 800px; margin: 30px auto; padding: 0 20px 60px; }
         .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
         .summary-card { background: #ffffff; padding: 25px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center; }
@@ -97,12 +92,10 @@
             <div id="att-label-text" class="label-box att-label">出席</div>
             <button id="att-btn" class="circle-btn att-btn" onclick="executeAttendance()"></button>
         </div>
-
         <div class="vote-container">
             <div class="label-box pro-label">贊成</div>
             <button id="pro-btn" class="circle-btn pro-btn" onclick="executeVote('贊成')"></button>
         </div>
-
         <div class="vote-container">
             <div class="label-box con-label">反對</div>
             <button id="con-btn" class="circle-btn con-btn" onclick="executeVote('反對')"></button>
@@ -122,14 +115,11 @@
                 <div id="con-names" class="name-list"></div>
             </div>
         </div>
-        
         <div style="margin-bottom: 15px; font-weight: 600; text-align: left; font-size: 1.3rem;" id="grand-total">累計總票數：0 票</div>
-        
         <div class="detail-container">
             <div class="detail-header">表決紀錄明細</div>
             <div id="detail-list"></div>
         </div>
-        
         <div class="admin-reset" onclick="adminReset()">系統管理員重置</div>
     </div>
 
@@ -143,58 +133,22 @@
         const db = firebase.database().ref('detailed_votes');
 
         let currentUserName = "";
+        let hasVoted = false; // 用於追蹤當前資料庫中是否已有該名字
 
-        function executeAttendance() {
-            if (localStorage.getItem('voted_name')) {
-                alert("系統紀錄顯示您已完成表決。");
-                return;
-            }
-            let nameInput = prompt("請輸入您的姓名以確認出席身份：");
-            if (!nameInput || nameInput.trim() === "") {
-                alert("未輸入姓名，身份確認失敗。");
-                return;
-            }
-            currentUserName = nameInput.trim();
-            
-            const attBtn = document.getElementById('att-btn');
-            const attLabel = document.getElementById('att-label-text');
-            
-            attBtn.classList.add('checked');
-            attBtn.disabled = true;
-            attLabel.innerText = currentUserName; 
-            
-            document.getElementById('status-header').innerText = `臺北市私立靜心高級中學學生會議案表決系統\n身份已確認：${currentUserName}，請進行表決`;
-            
-            document.getElementById('pro-btn').classList.add('enabled');
-            document.getElementById('con-btn').classList.add('enabled');
-        }
-
-        function executeVote(choice) {
-            if (!currentUserName) {
-                alert("請先完成出席確認。");
-                return;
-            }
-            if (confirm(`確認針對本議案投下「${choice}」票？`)) {
-                db.push({
-                    name: currentUserName,
-                    choice: choice,
-                    timestamp: Date.now()
-                }).then(() => {
-                    localStorage.setItem('voted_name', currentUserName);
-                    alert("表決紀錄已成功提交。");
-                    location.reload(); 
-                });
-            }
-        }
-
+        // 核心邏輯：即時監聽資料庫
         db.on('value', (snapshot) => {
             const listDiv = document.getElementById('detail-list');
             listDiv.innerHTML = "";
             let proNames = [], conNames = [];
+            let allVoterNames = []; // 存下所有已投票人的名字
+
             snapshot.forEach((child) => {
                 const data = child.val();
+                allVoterNames.push(data.name);
+                
                 if (data.choice === '贊成') proNames.push(data.name);
                 else if (data.choice === '反對') conNames.push(data.name);
+
                 const color = data.choice === '贊成' ? '#28a745' : '#dc3545';
                 listDiv.innerHTML += `
                     <div class="vote-item">
@@ -203,19 +157,84 @@
                     </div>
                 `;
             });
+
+            // 更新統計數據
             document.getElementById('pro-total').innerText = proNames.length;
             document.getElementById('pro-names').innerText = proNames.length > 0 ? "名單：" + proNames.join('、') : "";
             document.getElementById('con-total').innerText = conNames.length;
             document.getElementById('con-names').innerText = conNames.length > 0 ? "名單：" + conNames.join('、') : "";
             document.getElementById('grand-total').innerText = `累計總票數：${proNames.length + conNames.length} 票`;
+
+            // 【重要】檢查當前使用者是否在名單中。如果資料被刪除了，這裡會變成 false，使用者就可以再投。
+            if (currentUserName !== "" && allVoterNames.includes(currentUserName)) {
+                hasVoted = true;
+                lockButtonsAfterVote();
+            } else if (currentUserName !== "" && !allVoterNames.includes(currentUserName)) {
+                hasVoted = false;
+                unlockButtonsForNewVote();
+            }
         });
+
+        function executeAttendance() {
+            let nameInput = prompt("請輸入您的姓名以確認出席身份：");
+            if (!nameInput || nameInput.trim() === "") {
+                alert("未輸入姓名，身份確認失敗。");
+                return;
+            }
+            currentUserName = nameInput.trim();
+            
+            // 這裡不直接鎖死，而是透過即時監聽判斷
+            document.getElementById('status-header').innerText = `臺北市私立靜心高級中學學生會議案表決系統\n身份已確認：${currentUserName}，請進行表決`;
+            
+            // 初次確認後先開啟按鈕權限，稍後 db.on 會判斷是否鎖上
+            document.getElementById('pro-btn').classList.add('enabled');
+            document.getElementById('con-btn').classList.add('enabled');
+            
+            const attBtn = document.getElementById('att-btn');
+            attBtn.classList.add('checked');
+            document.getElementById('att-label-text').innerText = currentUserName;
+        }
+
+        function executeVote(choice) {
+            if (!currentUserName) {
+                alert("請先完成出席確認。");
+                return;
+            }
+            if (hasVoted) {
+                alert("系統紀錄顯示您針對本議案已完成表決，無法重複投票。");
+                return;
+            }
+            if (confirm(`確認針對本議案投下「${choice}」票？`)) {
+                db.push({
+                    name: currentUserName,
+                    choice: choice,
+                    timestamp: Date.now()
+                }).then(() => {
+                    alert("表決紀錄已成功提交。");
+                });
+            }
+        }
+
+        // 鎖定表決按鈕
+        function lockButtonsAfterVote() {
+            document.getElementById('pro-btn').classList.remove('enabled');
+            document.getElementById('con-btn').classList.remove('enabled');
+            document.getElementById('status-header').innerText = `臺北市私立靜心高級中學學生會議案表決系統\n${currentUserName}，您已完成本議案表決。`;
+        }
+
+        // 解鎖表決按鈕（當後台資料被刪除時自動觸發）
+        function unlockButtonsForNewVote() {
+            document.getElementById('pro-btn').classList.add('enabled');
+            document.getElementById('con-btn').classList.add('enabled');
+            document.getElementById('status-header').innerText = `臺北市私立靜心高級中學學生會議案表決系統\n身份已確認：${currentUserName}，請進行表決`;
+        }
 
         function adminReset() {
             if (prompt("請輸入管理權限密碼：") === "0126") {
                 if (confirm("警告：此操作將永久清除所有原始表決數據，是否繼續？")) {
-                    db.set(null);
-                    localStorage.removeItem('voted_name');
-                    location.reload();
+                    db.set(null); // 清空 Firebase 資料庫
+                    // 不再需要重新整理網頁，db.on 會自動幫所有人解鎖
+                    alert("資料已清空，所有人員皆可重新投票。");
                 }
             }
         }

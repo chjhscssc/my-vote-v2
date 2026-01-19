@@ -22,7 +22,7 @@
             font-size: 1.8rem; 
             font-weight: 700; 
             color: #1a1a1a; 
-            white-space: pre-line; /* 支援換行符號 \n */
+            white-space: pre-line; 
         }
 
         /* 三大操作區 */
@@ -36,17 +36,18 @@
         }
         .vote-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
-        /* 標籤方框 (顏色填滿，文字黑色) */
+        /* 標籤方框 (顏色填滿，移除黑色外框，字體再加大) */
         .label-box { 
             width: 140px; 
-            padding: 12px 0; 
+            padding: 15px 0; 
             border-radius: 8px; 
             font-weight: 700; 
-            font-size: 1.4rem;
+            font-size: 1.8rem; /* 字體進一步加大 */
             text-align: center;
             box-sizing: border-box;
             color: #000000; 
-            border: 2px solid #000000;
+            border: none; /* 移除外框 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 加入輕微陰影增加層次感 */
         }
         
         .att-label { background-color: #adb5bd; } /* 出席：灰色 */
@@ -73,12 +74,12 @@
         .dashboard { max-width: 800px; margin: 30px auto; padding: 0 20px 60px; }
         .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
         .summary-card { background: #ffffff; padding: 25px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center; }
-        .count-num { font-size: 3rem; font-weight: 700; display: block; margin: 10px 0; }
-        .name-list { font-size: 1.1rem; color: #495057; min-height: 1.2rem; word-break: break-all; }
+        .count-num { font-size: 3.5rem; font-weight: 700; display: block; margin: 10px 0; }
+        .name-list { font-size: 1.2rem; color: #495057; min-height: 1.2rem; word-break: break-all; }
         
         .detail-container { background: #ffffff; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden; }
         .detail-header { background: #f8f9fa; padding: 12px 20px; font-weight: 600; border-bottom: 1px solid #dee2e6; }
-        .vote-item { padding: 12px 20px; border-bottom: 1px solid #f1f3f5; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; }
+        .vote-item { padding: 12px 20px; border-bottom: 1px solid #f1f3f5; display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; }
         .tag { padding: 4px 12px; border-radius: 3px; color: #ffffff; font-size: 1rem; font-weight: 500; }
 
         .admin-reset { margin-top: 80px; color: #adb5bd; cursor: pointer; font-size: 0.9rem; text-decoration: underline; text-align: center; }
@@ -111,18 +112,18 @@
     <div class="dashboard">
         <div class="summary-grid">
             <div class="summary-card">
-                <div style="color: #28a745; font-weight: 600; font-size: 1.3rem;">贊成票數</div>
+                <div style="color: #28a745; font-weight: 600; font-size: 1.5rem;">贊成票數</div>
                 <span id="pro-total" class="count-num" style="color: #28a745;">0</span>
                 <div id="pro-names" class="name-list"></div>
             </div>
             <div class="summary-card">
-                <div style="color: #dc3545; font-weight: 600; font-size: 1.3rem;">反對票數</div>
+                <div style="color: #dc3545; font-weight: 600; font-size: 1.5rem;">反對票數</div>
                 <span id="con-total" class="count-num" style="color: #dc3545;">0</span>
                 <div id="con-names" class="name-list"></div>
             </div>
         </div>
         
-        <div style="margin-bottom: 15px; font-weight: 600; text-align: left; font-size: 1.2rem;" id="grand-total">累計總票數：0 票</div>
+        <div style="margin-bottom: 15px; font-weight: 600; text-align: left; font-size: 1.3rem;" id="grand-total">累計總票數：0 票</div>
         
         <div class="detail-container">
             <div class="detail-header">表決紀錄明細</div>
@@ -162,7 +163,6 @@
             attBtn.disabled = true;
             attLabel.innerText = currentUserName; 
             
-            // 更新狀態提示文字（保持換行）
             document.getElementById('status-header').innerText = `臺北市私立靜心高級中學學生會議案表決系統\n身份已確認：${currentUserName}，請進行表決`;
             
             document.getElementById('pro-btn').classList.add('enabled');

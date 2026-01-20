@@ -17,40 +17,38 @@
         .system-top-title { text-align: center; font-size: 2.5rem; font-weight: 900; padding: 25px 0 10px 0; letter-spacing: 4px; }
         body.admin-mode .system-top-title { color: #fff; }
 
-        /* 全域統一資訊列樣式 - 嚴格兩行首字對齊 */
+        /* 統一資訊列容器 */
         .info-bar-common { 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             gap: 100px; 
-            color: #ffc107; 
             font-weight: 900; 
         }
         
+        /* 兩行首字對齊結構 */
         .info-item { 
             display: flex; 
             flex-direction: column; 
-            align-items: flex-start; /* 確保兩行都靠左對齊，達成首字對齊 */
-            line-height: 1.2;
+            align-items: flex-start; 
+            line-height: 1.4; /* 調整行高讓兩行間隙美觀 */
         }
 
-        .info-label { 
-            font-size: 1.8rem; 
+        /* 兩行字體大小統一為 2.2rem */
+        .info-label, .info-value { 
+            font-size: 2.2rem; 
             letter-spacing: 2px;
-            white-space: nowrap; /* 確保「表決型態」不換行 */
-            margin-bottom: 5px;
-        }
-
-        .info-value { 
-            font-size: 3.8rem; 
-            letter-spacing: 2px;
+            white-space: nowrap;
             margin: 0;
             padding: 0;
-            line-height: 1;
         }
 
-        /* 投票端專用間距 */
-        .user-info-bar { margin: 20px 0 30px 0; min-height: 120px; }
+        /* 顏色區分邏輯 */
+        /* 1. 投票頁面 (User) - 黃色 */
+        .user-info-bar { color: #ffc107; margin: 20px 0 30px 0; min-height: 100px; }
+        
+        /* 2. 主席與監測端 (Admin/Monitor) - 白色 */
+        .header-info-group { color: #ffffff; }
 
         /* 管理端與監測端 Header */
         .admin-header { display: none; padding-bottom: 20px; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
@@ -122,7 +120,7 @@
             <div class="title-container">
                 <div id="display-vote-title" class="title-left">表決尚未開始</div>
             </div>
-            <div class="header-right-group">
+            <div class="header-right-group info-bar-common header-info-group">
                 <div class="info-item">
                     <div class="info-label">表決型態</div>
                     <div class="info-value">記名</div>

@@ -15,6 +15,10 @@
         body.admin-mode { background: #121212; color: #ffffff; }
         .system-top-title { text-align: center; font-size: 2.5rem; font-weight: 900; padding: 25px 0 10px 0; letter-spacing: 4px; }
         body.admin-mode .system-top-title { color: #fff; }
+        
+        /* 投票端專用倒數計時樣式 */
+        .user-timer-area { text-align: center; font-size: 3.8rem; color: #ffc107; font-weight: 900; letter-spacing: 2px; margin: 10px 0; min-height: 4.5rem; }
+
         .admin-header { display: none; padding-bottom: 20px; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
         .title-bar { display: flex; align-items: center; width: 100%; height: 120px; }
         .title-left { flex: 3; color: #ffc107; font-weight: 900; white-space: nowrap; overflow: hidden; font-size: clamp(1.2rem, 3.5vw, 2.3rem); transition: all 0.3s ease; }
@@ -36,10 +40,6 @@
         .circle-btn { width: 220px; height: 220px; border-radius: 50%; border: none; opacity: 0.15; cursor: not-allowed; pointer-events: none; transition: opacity 0.3s; }
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
         
-        #voted-message { display: none; text-align: center; background: #121212; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 100; flex-direction: column; justify-content: center; align-items: center; }
-        .huge-voted-text { font-size: 5rem; font-weight: 900; color: #28a745; line-height: 1.6; margin-bottom: 50px; }
-        .sync-timer-huge { font-size: 10rem; color: #ffffff; font-weight: 900; }
-
         .status-bar { font-size: 2.2rem; font-weight: 900; margin: 15px 0; text-align: center; }
         .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; }
         .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px 60px; list-style: none; padding: 0; margin: 0 auto; font-size: 2.5rem; width: fit-content; }
@@ -55,6 +55,8 @@
 <body>
     <div class="system-top-title">臺北市私立靜心高級中學學生會議案表決系統</div>
     
+    <div id="user-timer-container" class="user-timer-area" style="display:none;">01:00</div>
+
     <div id="header-section" class="admin-header">
         <div class="title-bar">
             <div id="display-vote-title" class="title-left status-not-started">表決尚未開始</div>
@@ -73,10 +75,6 @@
                 <div style="text-align:center"><div class="label-box" style="background:#28a745">贊成</div><button id="pro-btn" class="circle-btn" onclick="executeVote('贊成')" style="background:#28a745"></button></div>
                 <div style="text-align:center"><div class="label-box" style="background:#dc3545">反對</div><button id="con-btn" class="circle-btn" onclick="executeVote('反對')" style="background:#dc3545"></button></div>
             </div>
-        </div>
-        <div id="voted-message">
-            <div class="huge-voted-text">您已完成表決<br>請靜待主席宣布表決結果</div>
-            <div id="user-timer-huge" class="sync-timer-huge">01:00</div>
         </div>
     </div>
 
@@ -106,9 +104,7 @@
         const dbAttendance = db.ref('attendance_list');
         const dbConfig = db.ref('system_config');
 
-        // 已修正：李致寬
         const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "李致寬", "楊桂愷", "張丞萱"];
-        
         let currentUserName = localStorage.getItem('cssc_user_name') || "";
         let isAttended = false;
         const urlParams = new URLSearchParams(window.location.search);
@@ -127,13 +123,14 @@
             }
         } else {
             document.getElementById('user-view').style.display = 'flex';
+            document.getElementById('user-timer-container').style.display = 'block'; // 投票端顯示計時器區域
         }
 
         function updateClock(seconds) {
             let m = Math.floor(seconds / 60), s = seconds % 60;
             let str = (seconds === 60) ? "01:00" : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             if(document.getElementById('timer-display')) document.getElementById('timer-display').innerText = str;
-            if(document.getElementById('user-timer-huge')) document.getElementById('user-timer-huge').innerText = str;
+            if(document.getElementById('user-timer-container')) document.getElementById('user-timer-container').innerText = str;
             
             if (view === 'admin' && seconds === 0) {
                 dbConfig.once('value', snap => {
@@ -172,23 +169,20 @@
 
             if (!view) {
                 const statusHeader = document.getElementById('status-header');
-                const votedMsg = document.getElementById('voted-message');
                 const mainContent = document.getElementById('user-initial-content');
                 let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
 
                 if (config.isLocked && config.startTime > 0) {
-                    votedMsg.style.display = 'none';
-                    mainContent.style.display = 'block';
                     statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
                     statusHeader.className = "text-red";
                     document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
                 } else if (!config.isLocked && config.startTime > 0) {
                     if (currentUserName && hasVoted) {
-                        mainContent.style.display = 'none';
-                        votedMsg.style.display = 'flex';
+                        // 投完票狀態：紅字、按鈕變暗
+                        statusHeader.innerText = "*您已完成表決，請靜待主席宣布表決結果*";
+                        statusHeader.className = "text-red";
+                        document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
                     } else {
-                        mainContent.style.display = 'block';
-                        votedMsg.style.display = 'none';
                         if (currentUserName && attendance[currentUserName]) {
                             isAttended = true;
                             statusHeader.innerText = `核可：${currentUserName}，請投票`;
@@ -205,8 +199,6 @@
                         }
                     }
                 } else {
-                    votedMsg.style.display = 'none';
-                    mainContent.style.display = 'block';
                     statusHeader.innerText = "*表決尚未開始，請等候主席宣布開始表決*";
                     statusHeader.className = "text-black";
                     document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));

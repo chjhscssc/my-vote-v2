@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>學生會議案表決系統</title>
     
     <link rel="icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png?v=2" type="image/png">
@@ -11,21 +11,29 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; overflow: hidden; }
+        /* 修正：使用 100vh 與 -webkit-fill-available 解決載具裁切問題 */
+        html, body { 
+            height: 100vh; 
+            height: -webkit-fill-available; 
+            margin: 0; padding: 0; 
+            display: flex; flex-direction: column; 
+            font-family: "標楷體", "DFKai-SB", serif; 
+            background: #f8f9fa; color: #212529; 
+            overflow: hidden; 
+        }
         body.admin-mode { background: #121212; color: #ffffff; }
         
-        .system-top-title { text-align: center; font-size: 2.5rem; font-weight: 900; padding: 25px 0 10px 0; letter-spacing: 4px; }
+        .system-top-title { text-align: center; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; padding: 15px 0 5px 0; letter-spacing: 4px; flex-shrink: 0; }
         body.admin-mode .system-top-title { color: #fff; }
 
         .info-bar-common { 
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            gap: 80px; 
+            gap: clamp(20px, 10vw, 80px); 
             font-weight: 900; 
         }
 
-        /* 修改：統一上下堆疊文字的行距 */
         .info-item-stack { 
             display: flex; 
             flex-direction: column; 
@@ -40,52 +48,90 @@
             gap: 20px;
         }
 
-        /* 修改：統一倒數計時拆分文字的行距 */
         .label-split { 
             display: flex;
             flex-direction: column;
-            font-size: 2.2rem; 
+            font-size: clamp(1.5rem, 4vw, 2.2rem); 
             line-height: 1.4;
             text-align: left;
         }
 
         .font-main { 
-            font-size: 2.2rem; 
+            font-size: clamp(1.5rem, 4vw, 2.2rem); 
             letter-spacing: 2px;
             white-space: nowrap;
             margin: 0;
             padding: 0;
         }
 
-        .user-info-bar { color: #ffc107; margin: 20px 0 30px 0; min-height: 100px; }
+        .user-info-bar { color: #ffc107; margin: 10px 0; min-height: 60px; flex-shrink: 0; }
         .header-info-group { color: #ffffff; }
 
-        .admin-header { display: none; padding-bottom: 20px; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
-        .title-bar { display: flex; align-items: center; width: 100%; height: 150px; position: relative; }
+        .admin-header { display: none; padding-bottom: 10px; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
+        .title-bar { display: flex; align-items: center; width: 100%; height: 120px; position: relative; }
         
         .title-container { flex: 1.2; display: flex; justify-content: center; align-items: center; }
         .title-left { color: #ffc107; font-weight: 900; font-size: clamp(1.2rem, 3vw, 2.3rem); text-align: center; line-height: 1.2; max-width: 95%; }
-        .header-right-group { flex: 1; display: flex; justify-content: flex-start; gap: 60px; }
+        .header-right-group { flex: 1; display: flex; justify-content: flex-start; gap: 40px; }
         
-        #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
-        #status-header { font-size: 2.2rem; margin-bottom: 50px; display: block; font-weight: bold; text-align: center; line-height: 1.4; padding: 0 20px; }
+        /* 修正：允許內部捲動防止按鈕被裁切 */
+        #user-view { 
+            flex: 1; 
+            display: none; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            width: 100%; 
+            overflow-y: auto; 
+            padding: 10px 0;
+        }
+        
+        #status-header { 
+            font-size: clamp(1.2rem, 4vw, 2.2rem); 
+            margin-bottom: 20px; 
+            display: block; 
+            font-weight: bold; 
+            text-align: center; 
+            line-height: 1.4; 
+            padding: 0 20px; 
+        }
         .text-black { color: #000000; }
         .text-blue { color: #007bff; }
         .text-red { color: #dc3545; }
         
-        .label-box { width: 220px; padding: 15px 0; border-radius: 20px; font-weight: 900; font-size: 3.6rem; text-align: center; color: #000; letter-spacing: 5px; margin-bottom: 25px; }
-        .circle-btn { width: 220px; height: 220px; border-radius: 50%; border: none; opacity: 0.15; cursor: not-allowed; pointer-events: none; transition: opacity 0.3s; }
+        /* 修正：按鈕與標籤寬度隨螢幕縮放 */
+        .label-box { 
+            width: clamp(100px, 28vw, 220px); 
+            padding: 10px 0; 
+            border-radius: 20px; 
+            font-weight: 900; 
+            font-size: clamp(1.5rem, 5vw, 3.6rem); 
+            text-align: center; 
+            color: #000; 
+            letter-spacing: 5px; 
+            margin-bottom: 15px; 
+        }
+        .circle-btn { 
+            width: clamp(100px, 28vw, 220px); 
+            height: clamp(100px, 28vw, 220px); 
+            border-radius: 50%; 
+            border: none; 
+            opacity: 0.15; 
+            cursor: not-allowed; 
+            pointer-events: none; 
+            transition: opacity 0.3s; 
+        }
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
         
-        .status-bar { font-size: 2.2rem; font-weight: 900; margin: 15px 0; text-align: center; }
-        .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; }
-        .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px 60px; list-style: none; padding: 0; margin: 0 auto; font-size: 2.5rem; width: fit-content; }
+        .status-bar { font-size: 1.8rem; font-weight: 900; margin: 10px 0; text-align: center; }
+        .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 10px; overflow-y: auto; }
+        .monitor-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px 30px; list-style: none; padding: 0; margin: 0 auto; font-size: 1.8rem; width: 90%; }
         .v-row { color: #555; font-weight: 900; } .v-present { color: #ccc; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
-        .v-num { display: inline-block; width: 60px; }
+        .v-num { display: inline-block; width: 45px; }
         
-        #admin-view { display: none; padding: 30px; }
-        .admin-input-group { display: flex; gap: 20px; margin-bottom: 20px; justify-content: center; }
-        .vote-title-input { width: 60%; height: 70px; font-size: 1.6rem; padding: 10px; font-family: '標楷體'; }
+        #admin-view { display: none; padding: 20px; flex: 1; overflow-y: auto; }
+        .admin-input-group { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
+        .vote-title-input { width: 60%; height: 60px; font-size: 1.2rem; padding: 10px; font-family: '標楷體'; }
         .btn-disabled { opacity: 0.3 !important; cursor: not-allowed !important; pointer-events: none !important; }
     </style>
 </head>
@@ -123,12 +169,12 @@
 
     <div id="user-view">
         <div id="user-initial-content" style="text-align: center;">
-            <div id="pre-auth-section" style="margin-bottom: 30px;">
-                <input type="text" id="pre-name-input" placeholder="請輸入姓名" style="font-size: 1.5rem; padding: 10px; font-family: '標楷體'; width: 200px; border-radius: 10px; border: 1px solid #ccc;">
-                <button id="pre-name-confirm" onclick="preConfirmName()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer; margin-left: 10px;">確認姓名</button>
+            <div id="pre-auth-section" style="margin-bottom: 20px;">
+                <input type="text" id="pre-name-input" placeholder="請輸入姓名" style="font-size: 1.2rem; padding: 8px; font-family: '標楷體'; width: 180px; border-radius: 10px; border: 1px solid #ccc;">
+                <button id="pre-name-confirm" onclick="preConfirmName()" style="padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; margin-left: 5px;">確認姓名</button>
             </div>
             <span id="status-header" class="text-black">表決尚未開始，請先輸入名字並稍待主席宣布開始表決</span>
-            <div id="vote-controls" style="display: flex; gap: 50px; justify-content: center;">
+            <div id="vote-controls" style="display: flex; gap: clamp(10px, 5vw, 50px); justify-content: center; align-items: flex-end;">
                 <div style="text-align:center"><div class="label-box" style="background:#adb5bd">出席</div><button id="att-btn" class="circle-btn" onclick="executeAttendance()" style="background:#6c757d"></button></div>
                 <div style="text-align:center"><div class="label-box" style="background:#28a745">贊成</div><button id="pro-btn" class="circle-btn" onclick="executeVote('贊成')" style="background:#28a745"></button></div>
                 <div style="text-align:center"><div class="label-box" style="background:#dc3545">反對</div><button id="con-btn" class="circle-btn" onclick="executeVote('反對')" style="background:#dc3545"></button></div>
@@ -144,13 +190,13 @@
     <div id="admin-view">
         <div class="admin-input-group">
             <textarea id="vote-title-input" class="vote-title-input" placeholder="在此輸入議案標題..."></textarea>
-            <button onclick="confirmTitle()" style="padding:0 30px; background:#007bff; color:white; border:none; border-radius:10px; font-size:1.2rem; cursor:pointer;">確認標題</button>
+            <button onclick="confirmTitle()" style="padding:0 20px; background:#007bff; color:white; border:none; border-radius:10px; font-size:1rem; cursor:pointer;">確認標題</button>
         </div>
         <div id="admin-status" class="status-bar"></div>
         <div class="monitor-container"><ul id="admin-monitor-list" class="monitor-list"></ul></div>
-        <div style="text-align: center; margin-top: 20px;">
-            <button id="start-vote-btn" onclick="startVoting()" style="padding:15px 50px; background:#28a745; color:white; font-size:1.8rem; border:none; border-radius:10px; cursor:pointer;">開始表決</button>
-            <button onclick="adminReset()" style="padding:10px 20px; background:#444; color:#ccc; border:none; border-radius:10px; margin-left:15px; cursor:pointer;">重置</button>
+        <div style="text-align: center; margin-top: 15px;">
+            <button id="start-vote-btn" onclick="startVoting()" style="padding:12px 40px; background:#28a745; color:white; font-size:1.5rem; border:none; border-radius:10px; cursor:pointer;">開始表決</button>
+            <button onclick="adminReset()" style="padding:10px 20px; background:#444; color:#ccc; border:none; border-radius:10px; margin-left:10px; cursor:pointer;">重置</button>
         </div>
     </div>
 

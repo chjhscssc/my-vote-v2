@@ -17,7 +17,6 @@
         .system-top-title { text-align: center; font-size: 2.5rem; font-weight: 900; padding: 25px 0 10px 0; letter-spacing: 4px; }
         body.admin-mode .system-top-title { color: #fff; }
 
-        /* 全域資訊列容器 */
         .info-bar-common { 
             display: flex; 
             justify-content: center; 
@@ -26,9 +25,6 @@
             font-weight: 900; 
         }
 
-        /* ----------------------------------------------------------- */
-        /* 格式 A：表決型態 (上下兩行，首字對齊) - 維持不動 */
-        /* ----------------------------------------------------------- */
         .info-item-stack { 
             display: flex; 
             flex-direction: column; 
@@ -36,9 +32,6 @@
             line-height: 1.4;
         }
 
-        /* ----------------------------------------------------------- */
-        /* 格式 B：倒數計時 (左二行標籤，右一垂直置中數值) - 依要求調整 */
-        /* ----------------------------------------------------------- */
         .info-item-side { 
             display: flex; 
             flex-direction: row; 
@@ -54,7 +47,6 @@
             text-align: left;
         }
 
-        /* 統一字體大小 */
         .font-main { 
             font-size: 2.2rem; 
             letter-spacing: 2px;
@@ -63,7 +55,6 @@
             padding: 0;
         }
 
-        /* 顏色與間距 */
         .user-info-bar { color: #ffc107; margin: 20px 0 30px 0; min-height: 100px; }
         .header-info-group { color: #ffffff; }
 
@@ -74,7 +65,6 @@
         .title-left { color: #ffc107; font-weight: 900; font-size: clamp(1.2rem, 3vw, 2.3rem); text-align: center; line-height: 1.2; max-width: 95%; }
         .header-right-group { flex: 1; display: flex; justify-content: flex-start; gap: 60px; }
         
-        /* 基礎 UI 組件 */
         #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         #status-header { font-size: 2.2rem; margin-bottom: 50px; display: block; font-weight: bold; text-align: center; line-height: 1.4; padding: 0 20px; }
         .text-black { color: #000000; }
@@ -131,8 +121,12 @@
 
     <div id="user-view">
         <div id="user-initial-content" style="text-align: center;">
-            <span id="status-header" class="text-black">*表決尚未開始，請等候主席宣布開始表決*</span>
-            <div id="vote-controls" style="display: flex; gap: 50px;">
+            <div id="pre-auth-section" style="margin-bottom: 30px;">
+                <input type="text" id="pre-name-input" placeholder="請輸入姓名" style="font-size: 1.5rem; padding: 10px; font-family: '標楷體'; width: 200px; border-radius: 10px; border: 1px solid #ccc;">
+                <button id="pre-name-confirm" onclick="preConfirmName()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer; margin-left: 10px;">確認姓名</button>
+            </div>
+            <span id="status-header" class="text-black">表決尚未開始，請先輸入名字並稍待主席宣布開始表決</span>
+            <div id="vote-controls" style="display: flex; gap: 50px; justify-content: center;">
                 <div style="text-align:center"><div class="label-box" style="background:#adb5bd">出席</div><button id="att-btn" class="circle-btn" onclick="executeAttendance()" style="background:#6c757d"></button></div>
                 <div style="text-align:center"><div class="label-box" style="background:#28a745">贊成</div><button id="pro-btn" class="circle-btn" onclick="executeVote('贊成')" style="background:#28a745"></button></div>
                 <div style="text-align:center"><div class="label-box" style="background:#dc3545">反對</div><button id="con-btn" class="circle-btn" onclick="executeVote('反對')" style="background:#dc3545"></button></div>
@@ -188,6 +182,18 @@
             document.getElementById('user-info-bar').style.display = 'flex'; 
         }
 
+        function preConfirmName() {
+            const nameInput = document.getElementById('pre-name-input').value.trim();
+            if (!nameInput || !allowedUsers.includes(nameInput)) {
+                alert("名單中無此姓名");
+                return;
+            }
+            currentUserName = nameInput;
+            localStorage.setItem('cssc_user_name', currentUserName);
+            dbAttendance.child(currentUserName).set("entered"); 
+            document.getElementById('pre-auth-section').style.display = 'none';
+        }
+
         function updateClock(seconds) {
             let m = Math.floor(seconds / 60), s = seconds % 60;
             let str = (seconds === 60) ? "01:00" : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
@@ -230,7 +236,14 @@
 
             if (!view) {
                 const statusHeader = document.getElementById('status-header');
+                const preSection = document.getElementById('pre-auth-section');
                 let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
+                
+                if (currentUserName && attendance[currentUserName]) {
+                    preSection.style.display = 'none';
+                } else {
+                    preSection.style.display = 'block';
+                }
 
                 if (config.isLocked && config.startTime > 0) {
                     statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
@@ -241,30 +254,36 @@
                         statusHeader.innerText = "*您已完成表決，請靜待主席宣布表決結果*";
                         statusHeader.className = "text-red";
                         document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
+                    } else if (currentUserName && attendance[currentUserName] === true) {
+                        isAttended = true;
+                        statusHeader.innerText = `核可：${currentUserName}，請開始表決`;
+                        statusHeader.className = "text-blue";
+                        document.getElementById('att-btn').classList.remove('enabled');
+                        document.getElementById('pro-btn').classList.add('enabled');
+                        document.getElementById('con-btn').classList.add('enabled');
+                    } else if (currentUserName && attendance[currentUserName] === "entered") {
+                        statusHeader.innerText = `核可：${currentUserName}，請按下出席按鈕`;
+                        statusHeader.className = "text-blue";
+                        document.getElementById('att-btn').classList.add('enabled');
+                        document.getElementById('pro-btn').classList.remove('enabled');
+                        document.getElementById('con-btn').classList.remove('enabled');
                     } else {
-                        if (currentUserName && attendance[currentUserName]) {
-                            isAttended = true;
-                            statusHeader.innerText = `核可：${currentUserName}，請投票`;
-                            statusHeader.className = "text-blue";
-                            document.getElementById('att-btn').classList.remove('enabled');
-                            document.getElementById('pro-btn').classList.add('enabled');
-                            document.getElementById('con-btn').classList.add('enabled');
-                        } else {
-                            statusHeader.innerText = "*請先按下出席按鈕，輸入姓名驗證身分後再進行表決*";
-                            statusHeader.className = "text-black";
-                            document.getElementById('att-btn').classList.add('enabled');
-                            document.getElementById('pro-btn').classList.remove('enabled');
-                            document.getElementById('con-btn').classList.remove('enabled');
-                        }
+                        statusHeader.innerText = "請先輸入姓名";
+                        statusHeader.className = "text-black";
+                        document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
                     }
                 } else {
-                    statusHeader.innerText = "*表決尚未開始，請等候主席宣布開始表決*";
+                    if (currentUserName && attendance[currentUserName]) {
+                        statusHeader.innerText = "已輸入姓名，請稍待主席宣布開始表決";
+                    } else {
+                        statusHeader.innerText = "表決尚未開始，請先輸入名字並稍待主席宣布開始表決";
+                    }
                     statusHeader.className = "text-black";
                     document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
                 }
             }
 
-            let pro = 0, con = 0, att = Object.keys(attendance).length;
+            let pro = 0, con = 0, att = Object.keys(attendance).filter(k => attendance[k] === true).length;
             let voterMap = {};
             Object.values(votes).forEach(v => { voterMap[v.name] = v.choice; if(v.choice==='贊成') pro++; else con++; });
             const statusHTML = config.showResult 
@@ -276,8 +295,18 @@
             const render = (id) => {
                 const el = document.getElementById(id); if(!el) return; el.innerHTML = "";
                 allowedUsers.forEach((name, i) => {
-                    let cls = voterMap[name] ? (voterMap[name]==='贊成'?'v-pro':'v-con') : (attendance[name]?'v-present':'v-row');
-                    el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(i+1).toString().padStart(3,'0')}</span>${name}</span></li>`;
+                    let status = attendance[name];
+                    let displayName = name;
+                    let cls = 'v-row';
+                    if (voterMap[name]) {
+                        cls = (voterMap[name]==='贊成'?'v-pro':'v-con');
+                    } else if (status === true) {
+                        cls = 'v-present';
+                    } else if (status === "entered") {
+                        cls = 'v-row';
+                        displayName += "（已輸入）";
+                    }
+                    el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(i+1).toString().padStart(3,'0')}</span>${displayName}</span></li>`;
                 });
             };
             render('admin-monitor-list'); render('shared-monitor-list');
@@ -289,10 +318,7 @@
         }
         function startVoting() { dbConfig.update({ isLocked: false, startTime: Date.now(), showResult: false }); }
         function executeAttendance() {
-            let name = currentUserName || prompt("輸入姓名：");
-            if (!name || !allowedUsers.includes(name.trim())) return alert("名單中無此姓名");
-            currentUserName = name.trim();
-            localStorage.setItem('cssc_user_name', currentUserName);
+            if (!currentUserName) return;
             dbAttendance.child(currentUserName).set(true);
         }
         function executeVote(c) {

@@ -25,6 +25,7 @@
             font-weight: 900; 
         }
 
+        /* 修改：統一上下堆疊文字的行距 */
         .info-item-stack { 
             display: flex; 
             flex-direction: column; 
@@ -39,11 +40,12 @@
             gap: 20px;
         }
 
+        /* 修改：統一倒數計時拆分文字的行距 */
         .label-split { 
             display: flex;
             flex-direction: column;
             font-size: 2.2rem; 
-            line-height: 1.2;
+            line-height: 1.4;
             text-align: left;
         }
 
@@ -226,7 +228,6 @@
 
             if (view === 'admin') {
                 const startBtn = document.getElementById('start-vote-btn');
-                // 修改：若標題為空，或已經表決中，則禁用按鈕
                 if (!config.voteTitle || config.startTime > 0) { 
                     startBtn.classList.add('btn-disabled'); 
                 } else { 
@@ -324,7 +325,6 @@
             dbConfig.update({ voteTitle: t, isLocked: true, startTime: 0, showResult: false });
         }
         function startVoting() { 
-            // 額外保險：前端也檢查標題
             dbConfig.once('value', snap => {
                 const c = snap.val();
                 if(!c.voteTitle) return alert("請先輸入標題並點擊確認");

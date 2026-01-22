@@ -40,7 +40,6 @@
             align-items: center;
             margin-top: 2px;
         }
-
         #user-timer-value { color: #ffc107; }
         #timer-display { color: #ffffff; }
 
@@ -145,6 +144,9 @@
         const urlParams = new URLSearchParams(window.location.search);
         let view = urlParams.get('view');
 
+        // 頁面啟動時，如果偵測到 resetSignal 是 0，清除重整標記
+        dbConfig.child('resetSignal').once('value', s => { if(s.val() === 0) sessionStorage.removeItem('reloaded_by_signal'); });
+
         if (view === 'admin' || view === 'monitor') {
             const authKey = `is_auth_${view}`;
             if (!sessionStorage.getItem(authKey)) {
@@ -194,10 +196,11 @@
             const attendance = data.attendance_list || {};
             const votes = data.detailed_votes || {};
 
-            // 修正：避免重整死循環
-            if (!view && config.resetSignal === 1) { 
+            // 核心修正：加入 sessionStorage 標記防止重整循環
+            if (!view && config.resetSignal === 1 && !sessionStorage.getItem('reloaded_by_signal')) { 
+                sessionStorage.setItem('reloaded_by_signal', 'true');
                 localStorage.removeItem('cssc_user_name');
-                setTimeout(() => { location.reload(); }, 300);
+                location.reload();
                 return; 
             }
 
@@ -288,10 +291,12 @@
         function adminReset() {
             if (confirm("確定要重置所有數據嗎？")) {
                 dbVotes.set(null); dbAttendance.set(null);
+                // 直接更新並在回調中發送歸零指令
                 dbConfig.update({ isLocked: true, voteTitle: "", startTime: 0, showResult: false, resetSignal: 1 }, () => {
-                    // 核心修正：1秒後把訊號改回 0，防止死循環
-                    setTimeout(() => { dbConfig.update({ resetSignal: 0 }); }, 1000);
-                    if(view === 'admin') location.reload();
+                    setTimeout(() => { 
+                        dbConfig.update({ resetSignal: 0 }); 
+                        if(view === 'admin') location.reload();
+                    }, 1500);
                 });
             }
         }

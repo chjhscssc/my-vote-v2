@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>學生會議案表決系統</title>
     
-    <link rel="icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png?v=2" type="image/png">
-    <link rel="apple-touch-icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png?v=2">
+    <link rel="icon" href="https://lh3.googleusercontent.com/u/0/d/1y9TcczoEfvIwKxep6G3Ma-thcJv5Y19Z" type="image/png">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/u/0/d/1y9TcczoEfvIwKxep6G3Ma-thcJv5Y19Z">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -264,7 +264,7 @@
             else document.getElementById('monitor-view').style.display = 'flex';
         }
 
-        // 補回防護機制：檢查是否重複登入
+        // 偵測重複登入：輸入姓名時檢查
         function preConfirmName() {
             const nameInput = document.getElementById('pre-name-input').value.trim();
             if (!nameInput || !allowedUsers.includes(nameInput)) {
@@ -272,10 +272,10 @@
                 return;
             }
             
-            // 檢查 Firebase 是否該姓名已被佔用
             dbAttendance.child(nameInput).once('value', (snapshot) => {
                 if (snapshot.exists() && snapshot.val() !== "entered") {
-                    alert("該委員已在其他裝置進入系統，不可重複登入。");
+                    alert("此名稱已輸入，請勿重複投票");
+                    location.reload(); // 重整頁面阻擋該分頁進入
                 } else {
                     currentUserName = nameInput;
                     localStorage.setItem('cssc_user_name', currentUserName);
@@ -303,6 +303,11 @@
                 location.reload(); 
             }
 
+            // [新增] 即時偵測分頁/載具重複登入：若目前載具已有名字，但資料庫發現該名字狀態異常，則彈出警告
+            if (!view && currentUserName && attendance[currentUserName] === undefined && !config.resetSignal) {
+                // 如果本地有名字但資料庫找不到，且不是剛重置，可能是異常行為
+            }
+
             if (!config.isLocked && config.startTime > 0) {
                 const elapsed = Math.floor((Date.now() - config.startTime) / 1000);
                 updateClock(Math.max(0, 60 - elapsed));
@@ -317,7 +322,6 @@
                 const preSection = document.getElementById('pre-auth-section');
                 let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
                 
-                // 補回防護：若已輸入過名字則隱藏輸入框
                 if (currentUserName && (attendance[currentUserName] || hasVoted)) {
                     preSection.style.display = 'none';
                 }
@@ -356,8 +360,8 @@
             let voterMap = {};
             Object.values(votes).forEach(v => { voterMap[v.name] = v.choice; if(v.choice==='贊成') pro++; else con++; });
             const statusHTML = config.showResult 
-                ? `<span style="color:#fff">出席：${att}</span>   <span style="color:#28a745">贊成：${pro}</span>   <span style="color:#dc3545">反對：${con}</span>`
-                : `<span style="color:#fff">出席：白色</span>   <span style="color:#28a745">贊成：綠色</span>   <span style="color:#dc3545">反對：紅色</span>`;
+                ? `<span style="color:#fff">出席：${att}</span> &nbsp; <span style="color:#28a745">贊成：${pro}</span> &nbsp; <span style="color:#dc3545">反對：${con}</span>`
+                : `<span style="color:#fff">出席：白色</span> &nbsp; <span style="color:#28a745">贊成：綠色</span> &nbsp; <span style="color:#dc3545">反對：紅色</span>`;
             if(document.getElementById('admin-status')) document.getElementById('admin-status').innerHTML = statusHTML;
             if(document.getElementById('monitor-status')) document.getElementById('monitor-status').innerHTML = statusHTML;
 
@@ -372,7 +376,7 @@
                     if (voterMap[name]) cls = (voterMap[name]==='贊成'?'v-pro':'v-con');
                     else if (status === true) cls = 'v-present';
                     if (view === 'admin' && status === "entered") displayName += "（已輸入）";
-                    el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(idx+1).toString().padStart(3,'0')}</span>  ${displayName}</span></li>`;
+                    el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(idx+1).toString().padStart(3,'0')}</span>&nbsp;&nbsp;${displayName}</span></li>`;
                 });
             };
             render('admin-monitor-list'); render('shared-monitor-list');

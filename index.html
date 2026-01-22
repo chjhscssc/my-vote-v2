@@ -140,6 +140,13 @@
             font-size: 1.8rem; 
             width: 90%; 
         }
+        /* 僅針對監測頁面放大字體與置中 */
+        #shared-monitor-list { 
+            font-size: 2.5rem; 
+            width: 95%;
+            justify-items: center;
+        }
+
         .v-row { color: #555; font-weight: 900; } .v-present { color: #ccc; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
         .v-num { display: inline-block; width: 45px; }
         
@@ -300,9 +307,32 @@
                 const statusHeader = document.getElementById('status-header');
                 const preSection = document.getElementById('pre-auth-section');
                 let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
-                if (currentUserName && (attendance[currentUserName] || hasVoted)) preSection.style.display = 'none';
-                if (!config.isLocked && config.startTime > 0) {
-                    if (attendance[currentUserName] === true) isAttended = true;
+                
+                if (currentUserName && (attendance[currentUserName] || hasVoted)) {
+                    preSection.style.display = 'none';
+                }
+
+                // 修正投票頁面提示語邏輯
+                if (config.isLocked && config.startTime > 0) {
+                    statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
+                    statusHeader.className = "text-red";
+                } else if (!config.isLocked && config.startTime > 0) {
+                    if (hasVoted) {
+                        statusHeader.innerText = "*您已完成表決，請靜待主席宣布表決結果*";
+                        statusHeader.className = "text-red";
+                    } else if (attendance[currentUserName] === true) {
+                        isAttended = true;
+                        statusHeader.innerText = `核可：${currentUserName}，請開始表決`;
+                        statusHeader.className = "text-blue";
+                    } else if (attendance[currentUserName] === "entered") {
+                        statusHeader.innerText = `核可：${currentUserName}，請按下出席按鈕`;
+                        statusHeader.className = "text-blue";
+                    }
+                } else {
+                    if (currentUserName && (attendance[currentUserName] === "entered" || attendance[currentUserName] === true)) {
+                        statusHeader.innerText = `${currentUserName}委員您好，請稍待主席宣布開始表決`;
+                        statusHeader.className = "text-black";
+                    }
                 }
             }
 

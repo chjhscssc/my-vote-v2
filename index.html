@@ -25,6 +25,7 @@
         .system-top-title { text-align: center; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; padding: 15px 0 5px 0; letter-spacing: 4px; flex-shrink: 0; }
         body.admin-mode .system-top-title { color: #fff; }
 
+        /* 統一所有介面的資訊欄容器 */
         .info-bar-common { 
             display: flex; 
             justify-content: center; 
@@ -33,28 +34,24 @@
             font-weight: 900; 
         }
 
-        .info-item-stack { 
+        /* 關鍵：統一所有國字組合的行高與對齊 */
+        .info-item-stack, .label-split { 
             display: flex; 
             flex-direction: column; 
             align-items: flex-start; 
-            line-height: 1.4;
+            line-height: 1.4; /* 統一國字行距 */
         }
 
-        /* 調整計時器容器，確保垂直居中且對齊 */
         .info-item-side { 
             display: flex; 
             flex-direction: row; 
-            align-items: center; /* 確保左右兩側垂直中線對齊 */
+            align-items: center; 
             gap: 15px;
         }
 
         .label-split { 
-            display: flex;
-            flex-direction: column;
             font-size: clamp(1.2rem, 3.5vw, 2rem); 
-            line-height: 1.1; /* 縮小行高讓四個字更緊湊 */
             text-align: left;
-            justify-content: center;
         }
 
         .font-main { 
@@ -65,108 +62,50 @@
             padding: 0;
         }
 
-        /* 核心修改：計時器數字高度對齊國字頂尾 */
+        /* 統一放大計時器數字，並確保頂尾對齊 1.4 行高的國字 */
         #user-timer-value, #timer-display {
-            font-size: clamp(2.8rem, 8.5vw, 4.8rem) !important; 
+            font-size: clamp(3rem, 9vw, 5.2rem) !important; 
             font-weight: 900;
-            font-family: "Courier New", monospace; /* 等寬字體更整齊 */
+            font-family: "Courier New", monospace;
             color: #ffc107;
-            line-height: 0.9; /* 關鍵：調整行高讓數字視覺高度與兩行國字一致 */
+            line-height: 1; 
             display: flex;
             align-items: center;
+            margin-top: 2px;
         }
 
+        /* 調整主席/監測模式的 Header 布局 */
         .user-info-bar { color: #ffc107; margin: 10px 0; min-height: 80px; flex-shrink: 0; }
         .header-info-group { color: #ffffff; }
-
         .admin-header { display: none; padding-bottom: 10px; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
-        .title-bar { display: flex; align-items: center; width: 100%; height: 120px; position: relative; }
+        .title-bar { display: flex; align-items: center; width: 100%; height: 130px; position: relative; } /* 微調高度容納大數字 */
         
         .title-container { flex: 1.2; display: flex; justify-content: center; align-items: center; }
         .title-left { color: #ffc107; font-weight: 900; font-size: clamp(1.2rem, 3vw, 2.3rem); text-align: center; line-height: 1.2; max-width: 95%; }
         .header-right-group { flex: 1.5; display: flex; justify-content: flex-start; gap: 40px; }
         
-        #user-view { 
-            flex: 1; 
-            display: none; 
-            flex-direction: column; 
-            justify-content: flex-start; 
-            align-items: center; 
-            width: 100%; 
-            overflow-y: auto; 
-            padding: 20px 0; 
-        }
+        #user-view { flex: 1; display: none; flex-direction: column; justify-content: flex-start; align-items: center; width: 100%; overflow-y: auto; padding: 20px 0; }
+        #user-initial-content { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        #status-header { font-size: clamp(1.2rem, 4vw, 2.2rem); margin-bottom: 25px; display: block; font-weight: bold; text-align: center; line-height: 1.4; padding: 0 20px; }
         
-        #user-initial-content {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        #status-header { 
-            font-size: clamp(1.2rem, 4vw, 2.2rem); 
-            margin-bottom: 25px; 
-            display: block; 
-            font-weight: bold; 
-            text-align: center; 
-            line-height: 1.4; 
-            padding: 0 20px; 
-        }
         .text-black { color: #000000; }
         .text-blue { color: #007bff; }
         .text-red { color: #dc3545; }
         
-        .label-box { 
-            width: clamp(100px, 28vw, 220px); 
-            padding: 10px 0; 
-            border-radius: 20px; 
-            font-weight: 900; 
-            font-size: clamp(1.5rem, 5vw, 3.6rem); 
-            text-align: center; 
-            color: #000; 
-            letter-spacing: 5px; 
-            margin-bottom: 15px; 
-        }
-        .circle-btn { 
-            width: clamp(100px, 28vw, 220px); 
-            height: clamp(100px, 28vw, 220px); 
-            border-radius: 50%; 
-            border: none; 
-            opacity: 0.15; 
-            cursor: not-allowed; 
-            pointer-events: none; 
-            transition: opacity 0.3s; 
-        }
+        .label-box { width: clamp(100px, 28vw, 220px); padding: 10px 0; border-radius: 20px; font-weight: 900; font-size: clamp(1.5rem, 5vw, 3.6rem); text-align: center; color: #000; letter-spacing: 5px; margin-bottom: 15px; }
+        .circle-btn { width: clamp(100px, 28vw, 220px); height: clamp(100px, 28vw, 220px); border-radius: 50%; border: none; opacity: 0.15; cursor: not-allowed; pointer-events: none; transition: opacity 0.3s; }
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
         
         .status-bar { font-size: 1.8rem; font-weight: 900; margin: 10px 0; text-align: center; }
         .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 10px; overflow-y: auto; }
-        
-        .monitor-list { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 15px 30px; 
-            list-style: none; 
-            padding: 0; 
-            margin: 0 auto; 
-            font-size: 1.8rem; 
-            width: 90%; 
-        }
-        
-        #shared-monitor-list { 
-            font-size: 2.5rem; 
-            width: 95%;
-            justify-items: center;
-        }
-
+        .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px 30px; list-style: none; padding: 0; margin: 0 auto; font-size: 1.8rem; width: 90%; }
+        #shared-monitor-list { font-size: 2.5rem; width: 95%; justify-items: center; }
         .v-row { color: #555; font-weight: 900; } .v-present { color: #ccc; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
         .v-num { display: inline-block; width: 60px; }
         
         #admin-view { display: none; padding: 20px; flex: 1; overflow-y: auto; }
         .admin-input-group { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
         .vote-title-input { width: 60%; height: 60px; font-size: 1.2rem; padding: 10px; font-family: '標楷體'; }
-        .btn-disabled { opacity: 0.3 !important; cursor: not-allowed !important; pointer-events: none !important; }
     </style>
 </head>
 <body>
@@ -204,15 +143,11 @@
     <div id="user-view">
         <div id="user-initial-content">
             <div id="pre-auth-section" style="margin-bottom: 20px;">
-                <input type="text" id="pre-name-input" 
-                       placeholder="請輸入姓名" 
-                       onkeydown="if(event.key === 'Enter') preConfirmName()"
+                <input type="text" id="pre-name-input" placeholder="請輸入姓名" onkeydown="if(event.key === 'Enter') preConfirmName()"
                        style="font-size: 1.2rem; padding: 8px; font-family: '標楷體'; width: 180px; border-radius: 10px; border: 1px solid #ccc;">
                 <button id="pre-name-confirm" onclick="preConfirmName()" style="padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; margin-left: 5px;">確認姓名</button>
             </div>
-            
             <span id="status-header" class="text-black">表決尚未開始，請先輸入名字並稍待主席宣布開始表決</span>
-            
             <div id="vote-controls" style="display: flex; gap: clamp(10px, 5vw, 50px); justify-content: center; align-items: flex-end;">
                 <div style="text-align:center"><div class="label-box" style="background:#adb5bd">出席</div><button id="att-btn" class="circle-btn" onclick="executeAttendance()" style="background:#6c757d"></button></div>
                 <div style="text-align:center"><div class="label-box" style="background:#28a745">贊成</div><button id="pro-btn" class="circle-btn" onclick="executeVote('贊成')" style="background:#28a745"></button></div>
@@ -247,7 +182,7 @@
         const dbAttendance = db.ref('attendance_list');
         const dbConfig = db.ref('system_config');
 
-        const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "李致寬", "楊桂愷", "張丞萱"];
+        const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "決致寬", "楊桂愷", "張丞萱"];
         let currentUserName = localStorage.getItem('cssc_user_name') || "";
         let isAttended = false;
         const urlParams = new URLSearchParams(window.location.search);
@@ -256,14 +191,9 @@
         if (view === 'admin' || view === 'monitor') {
             const authKey = `is_auth_${view}`;
             if (!sessionStorage.getItem(authKey)) {
-                const pwd = prompt(`您正試圖進入${view === 'admin' ? '主席' : '監測'}模式，請輸入管理密碼：`);
-                if (pwd !== "0126") {
-                    alert("密碼錯誤。");
-                    window.location.href = window.location.pathname;
-                } else {
-                    sessionStorage.setItem(authKey, "true");
-                    setupView();
-                }
+                const pwd = prompt(`進入${view === 'admin' ? '主席' : '監測'}模式，請輸入密碼：`);
+                if (pwd !== "0126") window.location.href = window.location.pathname;
+                else { sessionStorage.setItem(authKey, "true"); setupView(); }
             } else { setupView(); }
         } else {
             document.getElementById('user-view').style.display = 'flex';
@@ -278,20 +208,15 @@
         }
 
         function preConfirmName() {
-            const nameInput = document.getElementById('pre-name-input').value.trim();
-            if (!nameInput || !allowedUsers.includes(nameInput)) {
-                alert("名單中無此姓名");
-                return;
-            }
+            const inputField = document.getElementById('pre-name-input');
+            const nameInput = inputField.value.trim();
+            if (!nameInput || !allowedUsers.includes(nameInput)) { alert("名單中無此姓名"); return; }
             dbAttendance.child(nameInput).transaction((currentData) => {
-                if (currentData !== null) return;
+                if (currentData !== null) return; 
                 return "entered";
             }, (error, committed) => {
-                if (error) alert("網路異常");
-                else if (!committed) {
-                    alert("此名稱已輸入，請勿重複投票");
-                    document.getElementById('pre-name-input').value = "";
-                } else {
+                if (!committed) { alert("此名稱已由其他載具輸入，請檢查姓名是否正確"); inputField.value = ""; } 
+                else {
                     currentUserName = nameInput;
                     localStorage.setItem('cssc_user_name', currentUserName);
                     document.getElementById('pre-auth-section').style.display = 'none';
@@ -312,53 +237,55 @@
             const attendance = data.attendance_list || {};
             const votes = data.detailed_votes || {};
 
-            if (!view && config.resetSignal) { dbConfig.update({ resetSignal: 0 }); location.reload(); }
+            if (!view && config.resetSignal) { localStorage.removeItem('cssc_user_name'); location.reload(); return; }
 
             if (!config.isLocked && config.startTime > 0) {
                 const elapsed = Math.floor((Date.now() - config.startTime) / 1000);
                 updateClock(Math.max(0, 60 - elapsed));
-            } else if (config.isLocked && config.startTime > 0) { updateClock(0); } else { updateClock(60); }
+            } else { updateClock(60); }
 
             if (document.getElementById('display-vote-title')) document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
 
             if (!view) {
                 const statusHeader = document.getElementById('status-header');
                 const preSection = document.getElementById('pre-auth-section');
-                let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
-                if (currentUserName && (attendance[currentUserName] || hasVoted)) preSection.style.display = 'none';
-
-                const proBtn = document.getElementById('pro-btn'), conBtn = document.getElementById('con-btn'), attBtn = document.getElementById('att-btn');
-                if (config.isLocked && config.startTime > 0) {
-                    statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
-                    statusHeader.className = "text-red";
-                    [proBtn, conBtn, attBtn].forEach(b => b.classList.remove('enabled'));
-                } else if (!config.isLocked && config.startTime > 0) {
-                    if (hasVoted) {
-                        statusHeader.innerText = "*您已完成表決，請靜待主席宣布表決結果*";
+                if (currentUserName && attendance[currentUserName]) {
+                    preSection.style.display = 'none';
+                    let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
+                    const proBtn = document.getElementById('pro-btn'), conBtn = document.getElementById('con-btn'), attBtn = document.getElementById('att-btn');
+                    if (config.isLocked && config.startTime > 0) {
+                        statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
                         statusHeader.className = "text-red";
                         [proBtn, conBtn, attBtn].forEach(b => b.classList.remove('enabled'));
-                    } else if (attendance[currentUserName] === true) {
-                        isAttended = true;
-                        statusHeader.innerText = `核可：${currentUserName}，請開始表決`;
-                        statusHeader.className = "text-blue";
-                        proBtn.classList.add('enabled'); conBtn.classList.add('enabled'); attBtn.classList.remove('enabled');
-                    } else if (attendance[currentUserName] === "entered") {
-                        statusHeader.innerText = `核可：${currentUserName}，請按下出席按鈕`;
-                        statusHeader.className = "text-blue";
-                        attBtn.classList.add('enabled'); [proBtn, conBtn].forEach(b => b.classList.remove('enabled'));
-                    }
-                } else {
-                    [proBtn, conBtn, attBtn].forEach(b => b.classList.remove('enabled'));
-                    if (currentUserName && (attendance[currentUserName] === "entered" || attendance[currentUserName] === true)) {
+                    } else if (!config.isLocked && config.startTime > 0) {
+                        if (hasVoted) {
+                            statusHeader.innerText = "*您已完成表決，請靜待主席宣布表決結果*";
+                            statusHeader.className = "text-red";
+                            [proBtn, conBtn, attBtn].forEach(b => b.classList.remove('enabled'));
+                        } else if (attendance[currentUserName] === true) {
+                            isAttended = true;
+                            statusHeader.innerText = `核可：${currentUserName}，請開始表決`;
+                            statusHeader.className = "text-blue";
+                            proBtn.classList.add('enabled'); conBtn.classList.add('enabled'); attBtn.classList.remove('enabled');
+                        } else {
+                            statusHeader.innerText = `核可：${currentUserName}，請按下出席按鈕`;
+                            statusHeader.className = "text-blue";
+                            attBtn.classList.add('enabled'); [proBtn, conBtn].forEach(b => b.classList.remove('enabled'));
+                        }
+                    } else {
                         statusHeader.innerText = `${currentUserName}委員您好，請稍待主席宣布開始表決`;
                         statusHeader.className = "text-black";
+                        [proBtn, conBtn, attBtn].forEach(b => b.classList.remove('enabled'));
                     }
+                } else {
+                    preSection.style.display = 'block';
+                    statusHeader.innerText = "表決尚未開始，請先輸入名字並稍待主席宣布開始表決";
+                    statusHeader.className = "text-black";
                 }
             }
 
             let pro = 0, con = 0, att = Object.keys(attendance).filter(k => attendance[k] === true).length;
-            let voterMap = {};
-            Object.values(votes).forEach(v => { voterMap[v.name] = v.choice; if(v.choice==='贊成') pro++; else con++; });
+            let voterMap = {}; Object.values(votes).forEach(v => { voterMap[v.name] = v.choice; if(v.choice==='贊成') pro++; else con++; });
             const statusHTML = config.showResult 
                 ? `<span style="color:#fff">出席：${att}</span>   <span style="color:#28a745">贊成：${pro}</span>   <span style="color:#dc3545">反對：${con}</span>`
                 : `<span style="color:#fff">出席：白色</span>   <span style="color:#28a745">贊成：綠色</span>   <span style="color:#dc3545">反對：紅色</span>`;
@@ -367,15 +294,10 @@
 
             const render = (id) => {
                 const el = document.getElementById(id); if(!el) return; el.innerHTML = "";
-                const customOrder = [0, 2, 4, 6, 1, 3, 5, 7];
-                customOrder.forEach((idx) => {
+                [0, 2, 4, 6, 1, 3, 5, 7].forEach((idx) => {
                     const name = allowedUsers[idx];
-                    let status = attendance[name];
-                    let displayName = name;
-                    let cls = 'v-row';
-                    if (voterMap[name]) cls = (voterMap[name]==='贊成'?'v-pro':'v-con');
-                    else if (status === true) cls = 'v-present';
-                    if (view === 'admin' && status === "entered") displayName += "（已輸入）";
+                    let cls = voterMap[name] ? (voterMap[name]==='贊成'?'v-pro':'v-con') : (attendance[name] === true ? 'v-present' : 'v-row');
+                    let displayName = (view === 'admin' && attendance[name] === "entered") ? name + "（已輸入）" : name;
                     el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(idx+1).toString().padStart(3,'0')}</span>  ${displayName}</span></li>`;
                 });
             };
@@ -389,8 +311,7 @@
         }
         function startVoting() { 
             dbConfig.once('value', snap => {
-                const c = snap.val();
-                if(!c.voteTitle) return alert("請先輸入標題並點擊確認");
+                if(!snap.val().voteTitle) return alert("請先輸入標題並點擊確認");
                 dbConfig.update({ isLocked: false, startTime: Date.now(), showResult: false }); 
             });
         }
@@ -398,26 +319,21 @@
         function executeVote(c) {
             if (!isAttended || !currentUserName) return;
             dbVotes.once('value', (snapshot) => {
-                const votes = snapshot.val() || {};
-                if (Object.values(votes).some(v => v.name === currentUserName)) { alert("您已投過票。"); return; }
+                if (Object.values(snapshot.val() || {}).some(v => v.name === currentUserName)) return alert("您已投過票。");
                 if (confirm(`確定投給「${c}」？`)) dbVotes.push({ name: currentUserName, choice: c, timestamp: Date.now() });
             });
         }
         function adminReset() {
-            if (confirm("確定要重置所有表決數據嗎？")) {
+            if (confirm("確定要重置所有數據嗎？")) {
                 dbVotes.set(null); dbAttendance.set(null);
-                dbConfig.set({ isLocked: true, voteTitle: "", startTime: 0, showResult: false, resetSignal: 1 });
-                localStorage.removeItem('cssc_user_name');
+                dbConfig.update({ isLocked: true, voteTitle: "", startTime: 0, showResult: false, resetSignal: 1 });
                 if(view === 'admin') location.reload();
             }
         }
         setInterval(() => {
             dbConfig.once('value', s => {
                 const c = s.val() || {};
-                if(!c.isLocked && c.startTime > 0) {
-                    const rem = Math.max(0, 60 - Math.floor((Date.now() - c.startTime) / 1000));
-                    updateClock(rem);
-                }
+                if(!c.isLocked && c.startTime > 0) updateClock(Math.max(0, 60 - Math.floor((Date.now() - c.startTime) / 1000)));
             });
         }, 1000);
     </script>

@@ -144,7 +144,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         let view = urlParams.get('view');
 
-        // 頁面啟動時，如果偵測到 resetSignal 是 0，清除重整標記
         dbConfig.child('resetSignal').once('value', s => { if(s.val() === 0) sessionStorage.removeItem('reloaded_by_signal'); });
 
         if (view === 'admin' || view === 'monitor') {
@@ -166,6 +165,7 @@
             else document.getElementById('monitor-view').style.display = 'flex';
         }
 
+        // 優化：確認姓名後立刻強制刷新畫面邏輯
         function preConfirmName() {
             const inputField = document.getElementById('pre-name-input');
             const nameInput = inputField.value.trim();
@@ -179,6 +179,8 @@
                     currentUserName = nameInput;
                     localStorage.setItem('cssc_user_name', currentUserName);
                     document.getElementById('pre-auth-section').style.display = 'none';
+                    // 強制手動觸發一次資料更新
+                    db.ref().once('value', (snapshot) => { updateUI(snapshot.val()); });
                 }
             });
         }
@@ -190,13 +192,12 @@
             if(document.getElementById('user-timer-value')) document.getElementById('user-timer-value').innerText = str;
         }
 
-        db.ref().on('value', (snapshot) => {
-            const data = snapshot.val() || {};
+        function updateUI(data) {
+            data = data || {};
             const config = data.system_config || { isLocked: true, startTime: 0, voteTitle: "", resetSignal: 0 };
             const attendance = data.attendance_list || {};
             const votes = data.detailed_votes || {};
 
-            // 核心修正：加入 sessionStorage 標記防止重整循環
             if (!view && config.resetSignal === 1 && !sessionStorage.getItem('reloaded_by_signal')) { 
                 sessionStorage.setItem('reloaded_by_signal', 'true');
                 localStorage.removeItem('cssc_user_name');
@@ -214,10 +215,12 @@
             if (!view) {
                 const statusHeader = document.getElementById('status-header');
                 const preSection = document.getElementById('pre-auth-section');
+                
                 if (currentUserName && attendance[currentUserName]) {
                     preSection.style.display = 'none';
                     let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
                     const proBtn = document.getElementById('pro-btn'), conBtn = document.getElementById('con-btn'), attBtn = document.getElementById('att-btn');
+                    
                     if (config.isLocked && config.startTime > 0) {
                         statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
                         statusHeader.className = "text-red";
@@ -254,6 +257,7 @@
             const statusHTML = config.showResult 
                 ? `<span style="color:#fff">出席：${att}</span>   <span style="color:#28a745">贊成：${pro}</span>   <span style="color:#dc3545">反對：${con}</span>`
                 : `<span style="color:#fff">出席：白色</span>   <span style="color:#28a745">贊成：綠色</span>   <span style="color:#dc3545">反對：紅色</span>`;
+            
             if(document.getElementById('admin-status')) document.getElementById('admin-status').innerHTML = statusHTML;
             if(document.getElementById('monitor-status')) document.getElementById('monitor-status').innerHTML = statusHTML;
 
@@ -267,7 +271,9 @@
                 });
             };
             render('admin-monitor-list'); render('shared-monitor-list');
-        });
+        }
+
+        db.ref().on('value', (snapshot) => { updateUI(snapshot.val()); });
 
         function confirmTitle() {
             const t = document.getElementById('vote-title-input').value.trim();
@@ -291,7 +297,6 @@
         function adminReset() {
             if (confirm("確定要重置所有數據嗎？")) {
                 dbVotes.set(null); dbAttendance.set(null);
-                // 直接更新並在回調中發送歸零指令
                 dbConfig.update({ isLocked: true, voteTitle: "", startTime: 0, showResult: false, resetSignal: 1 }, () => {
                     setTimeout(() => { 
                         dbConfig.update({ resetSignal: 0 }); 

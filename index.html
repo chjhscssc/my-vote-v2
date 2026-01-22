@@ -47,7 +47,6 @@
         .header-info-group { color: #ffffff; }
         .admin-header { display: none; padding-bottom: 10px; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
         
-        /* 標題欄位優化：強制不換行，並根據容器大小自動縮放字體 */
         .title-bar { display: flex; align-items: center; width: 100%; height: 130px; position: relative; overflow: hidden; }
         .title-container { 
             flex: 1.2; 
@@ -55,20 +54,19 @@
             justify-content: center; 
             align-items: center; 
             height: 100%;
-            padding: 0 10px;
+            padding: 0 15px;
             overflow: hidden; 
+            box-sizing: border-box;
         }
         .title-left { 
             color: #ffc107; 
             font-weight: 900; 
-            /* 使用 container query 或調整後的 clamp 確保不換行 */
-            font-size: clamp(1rem, 2.5vw, 2.3rem); 
+            font-size: 2.3rem; /* 初始大小 */
             text-align: center; 
-            line-height: 1; 
-            width: 100%;
-            white-space: nowrap; /* 強制不換行 */
-            overflow: hidden;
-            text-overflow: ellipsis; /* 若真的太長則顯示省略號 */
+            line-height: 1.1; 
+            white-space: nowrap; /* 絕不換行 */
+            display: inline-block;
+            transition: font-size 0.1s; /* 縮放時稍微平滑一點 */
         }
 
         .header-right-group { flex: 1.5; display: flex; justify-content: flex-start; gap: 40px; }
@@ -212,17 +210,19 @@
             if(document.getElementById('user-timer-value')) document.getElementById('user-timer-value').innerText = str;
         }
 
-        // 新增：動圖標題縮放函數
+        // 核心修正：強制縮小直到塞滿寬度，不使用省略號
         function adjustTitleFontSize() {
             const titleEl = document.getElementById('display-vote-title');
             if (!titleEl) return;
             const container = titleEl.parentElement;
-            let fontSize = 2.3; // 最大字體 (rem)
+            
+            let fontSize = 2.3; // 預設最大 rem
             titleEl.style.fontSize = fontSize + "rem";
             
-            // 如果文字寬度大於容器，則逐漸縮小字體直到塞滿或達到下限
-            while (titleEl.scrollWidth > container.clientWidth && fontSize > 0.8) {
-                fontSize -= 0.1;
+            // 迴圈檢查直到文字寬度 <= 容器寬度 (或縮小到極限 0.4rem)
+            // 使用 scrollWidth 偵測實際文字寬度
+            while (titleEl.scrollWidth > container.clientWidth && fontSize > 0.4) {
+                fontSize -= 0.05;
                 titleEl.style.fontSize = fontSize + "rem";
             }
         }
@@ -247,7 +247,8 @@
 
             if (document.getElementById('display-vote-title')) {
                 document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
-                adjustTitleFontSize(); // 更新文字後調整大小
+                // 延遲一點點執行確保 DOM 文字已渲染
+                setTimeout(adjustTitleFontSize, 10);
             }
 
             if (!view) {
@@ -350,7 +351,6 @@
             });
         }, 1000);
         
-        // 監聽視窗縮放，確保標題字體同步調整
         window.addEventListener('resize', adjustTitleFontSize);
     </script>
 </body>

@@ -128,11 +128,48 @@
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
         
         .status-bar { font-size: 1.8rem; font-weight: 900; margin: 10px 0; text-align: center; }
-        .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 10px; overflow-y: auto; }
-        .monitor-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px 30px; list-style: none; padding: 0; margin: 0 auto; font-size: 1.8rem; width: 90%; }
-        .v-row { color: #555; font-weight: 900; } .v-present { color: #ccc; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
-        .v-num { display: inline-block; width: 45px; }
         
+        /* --- 修正名單佈局 --- */
+        .monitor-container { 
+            flex: 1; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            padding: 20px; 
+            overflow-y: auto; 
+        }
+        .monitor-list { 
+            display: grid; 
+            /* 分成兩行直排，每排固定寬度 */
+            grid-template-columns: repeat(2, minmax(250px, 1fr)); 
+            /* 固定四列橫排 */
+            grid-template-rows: repeat(4, auto);
+            /* 重要：強制由上到下填滿一欄後，再填下一欄 */
+            grid-auto-flow: column; 
+            gap: 15px 50px; 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+            font-size: 2rem; 
+            width: fit-content;
+        }
+        .v-row-wrapper {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        .v-num { 
+            display: inline-block; 
+            width: 60px; /* 固定編號寬度，確保名字對齊 */
+            font-family: monospace;
+            font-weight: bold;
+        }
+        .v-row { color: #555; font-weight: 900; } 
+        .v-present { color: #ccc; } 
+        .v-pro { color: #28a745; } 
+        .v-con { color: #dc3545; }
+        /* --- 修正結束 --- */
+
         #admin-view { display: none; padding: 20px; flex: 1; overflow-y: auto; }
         .admin-input-group { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
         .vote-title-input { width: 60%; height: 60px; font-size: 1.2rem; padding: 10px; font-family: '標楷體'; }
@@ -223,23 +260,19 @@
         const urlParams = new URLSearchParams(window.location.search);
         let view = urlParams.get('view');
 
-        // 修正：使用 sessionStorage 記憶驗證狀態
         if (view === 'admin' || view === 'monitor') {
             const authKey = `is_auth_${view}`;
             let isAlreadyAuth = sessionStorage.getItem(authKey);
-
             if (!isAlreadyAuth) {
                 const pwd = prompt(`您正試圖進入${view === 'admin' ? '主席' : '監測'}模式，請輸入管理密碼：`);
                 if (pwd !== "0126") {
                     alert("密碼錯誤，將跳轉回投票頁面。");
                     window.location.href = window.location.pathname;
                 } else {
-                    sessionStorage.setItem(authKey, "true"); // 記錄已驗證
+                    sessionStorage.setItem(authKey, "true");
                     setupView();
                 }
-            } else {
-                setupView(); // 已經驗證過，直接進入
-            }
+            } else { setupView(); }
         } else {
             document.getElementById('user-view').style.display = 'flex';
             document.getElementById('user-info-bar').style.display = 'flex'; 
@@ -294,15 +327,6 @@
                 updateClock(Math.max(0, 60 - elapsed));
             } else if (config.isLocked && config.startTime > 0) { updateClock(0); } else { updateClock(60); }
 
-            if (view === 'admin') {
-                const startBtn = document.getElementById('start-vote-btn');
-                if (!config.voteTitle || config.startTime > 0) { 
-                    startBtn.classList.add('btn-disabled'); 
-                } else { 
-                    startBtn.classList.remove('btn-disabled'); 
-                }
-            }
-
             if (document.getElementById('display-vote-title')) {
                 document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
             }
@@ -321,38 +345,22 @@
                 if (config.isLocked && config.startTime > 0) {
                     statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
                     statusHeader.className = "text-red";
-                    document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
                 } else if (!config.isLocked && config.startTime > 0) {
-                    if (currentUserName && hasVoted) {
+                    if (hasVoted) {
                         statusHeader.innerText = "*您已完成表決，請靜待主席宣布表決結果*";
                         statusHeader.className = "text-red";
-                        document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
-                    } else if (currentUserName && attendance[currentUserName] === true) {
+                    } else if (attendance[currentUserName] === true) {
                         isAttended = true;
                         statusHeader.innerText = `核可：${currentUserName}，請開始表決`;
                         statusHeader.className = "text-blue";
-                        document.getElementById('att-btn').classList.remove('enabled');
-                        document.getElementById('pro-btn').classList.add('enabled');
-                        document.getElementById('con-btn').classList.add('enabled');
-                    } else if (currentUserName && attendance[currentUserName] === "entered") {
+                    } else if (attendance[currentUserName] === "entered") {
                         statusHeader.innerText = `核可：${currentUserName}，請按下出席按鈕`;
                         statusHeader.className = "text-blue";
-                        document.getElementById('att-btn').classList.add('enabled');
-                        document.getElementById('pro-btn').classList.remove('enabled');
-                        document.getElementById('con-btn').classList.remove('enabled');
-                    } else {
-                        statusHeader.innerText = "請先輸入姓名";
-                        statusHeader.className = "text-black";
-                        document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
                     }
                 } else {
                     if (currentUserName && (attendance[currentUserName] === "entered" || attendance[currentUserName] === true)) {
                         statusHeader.innerText = `${currentUserName}委員您好，請稍待主席宣布開始表決`;
-                    } else {
-                        statusHeader.innerText = "表決尚未開始，請先輸入名字並稍待主席宣布開始表決";
                     }
-                    statusHeader.className = "text-black";
-                    document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
                 }
             }
 
@@ -365,6 +373,7 @@
             if(document.getElementById('admin-status')) document.getElementById('admin-status').innerHTML = statusHTML;
             if(document.getElementById('monitor-status')) document.getElementById('monitor-status').innerHTML = statusHTML;
 
+            // 渲染名單邏輯
             const render = (id) => {
                 const el = document.getElementById(id); if(!el) return; el.innerHTML = "";
                 allowedUsers.forEach((name, i) => {
@@ -375,13 +384,13 @@
                         cls = (voterMap[name]==='贊成'?'v-pro':'v-con');
                     } else if (status === true) {
                         cls = 'v-present';
-                    } else if (status === "entered") {
-                        cls = 'v-row';
-                        if (view === 'admin') {
-                            displayName += "（已輸入）";
-                        }
                     }
-                    el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(i+1).toString().padStart(3,'0')}</span>${displayName}</span></li>`;
+                    
+                    if (view === 'admin' && status === "entered") {
+                        displayName += "（已輸入）";
+                    }
+
+                    el.innerHTML += `<li><div class="v-row-wrapper"><span class="v-num">${(i+1).toString().padStart(3,'0')}</span><span class="${cls}">${displayName}</span></div></li>`;
                 });
             };
             render('admin-monitor-list'); render('shared-monitor-list');
@@ -411,8 +420,6 @@
                 if (confirm(`確定投給「${c}」？`)) dbVotes.push({ name: currentUserName, choice: c, timestamp: Date.now() });
             });
         }
-
-        // 修正：重置時不再要求輸入密碼
         function adminReset() {
             if (confirm("確定要重置所有表決數據嗎？")) {
                 dbVotes.set(null); dbAttendance.set(null);
@@ -421,7 +428,6 @@
                 if(view === 'admin') location.reload();
             }
         }
-
         setInterval(() => {
             dbConfig.once('value', s => {
                 const c = s.val() || {};

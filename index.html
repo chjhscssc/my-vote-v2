@@ -11,7 +11,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* 修正：使用 100vh 與 -webkit-fill-available 解決載具裁切問題 */
         html, body { 
             height: 100vh; 
             height: -webkit-fill-available; 
@@ -74,21 +73,28 @@
         .title-left { color: #ffc107; font-weight: 900; font-size: clamp(1.2rem, 3vw, 2.3rem); text-align: center; line-height: 1.2; max-width: 95%; }
         .header-right-group { flex: 1; display: flex; justify-content: flex-start; gap: 40px; }
         
-        /* 修正：允許內部捲動防止按鈕被裁切 */
         #user-view { 
             flex: 1; 
             display: none; 
             flex-direction: column; 
-            justify-content: center; 
+            justify-content: flex-start; /* 改為向上對齊 */
             align-items: center; 
             width: 100%; 
             overflow-y: auto; 
-            padding: 10px 0;
+            padding: 20px 0; /* 增加頂部間距 */
+        }
+        
+        /* 讓容器內的元素可以緊湊移動 */
+        #user-initial-content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         #status-header { 
             font-size: clamp(1.2rem, 4vw, 2.2rem); 
-            margin-bottom: 20px; 
+            margin-bottom: 25px; 
             display: block; 
             font-weight: bold; 
             text-align: center; 
@@ -99,7 +105,6 @@
         .text-blue { color: #007bff; }
         .text-red { color: #dc3545; }
         
-        /* 修正：按鈕與標籤寬度隨螢幕縮放 */
         .label-box { 
             width: clamp(100px, 28vw, 220px); 
             padding: 10px 0; 
@@ -168,12 +173,14 @@
     </div>
 
     <div id="user-view">
-        <div id="user-initial-content" style="text-align: center;">
+        <div id="user-initial-content">
             <div id="pre-auth-section" style="margin-bottom: 20px;">
                 <input type="text" id="pre-name-input" placeholder="請輸入姓名" style="font-size: 1.2rem; padding: 8px; font-family: '標楷體'; width: 180px; border-radius: 10px; border: 1px solid #ccc;">
                 <button id="pre-name-confirm" onclick="preConfirmName()" style="padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; margin-left: 5px;">確認姓名</button>
             </div>
+            
             <span id="status-header" class="text-black">表決尚未開始，請先輸入名字並稍待主席宣布開始表決</span>
+            
             <div id="vote-controls" style="display: flex; gap: clamp(10px, 5vw, 50px); justify-content: center; align-items: flex-end;">
                 <div style="text-align:center"><div class="label-box" style="background:#adb5bd">出席</div><button id="att-btn" class="circle-btn" onclick="executeAttendance()" style="background:#6c757d"></button></div>
                 <div style="text-align:center"><div class="label-box" style="background:#28a745">贊成</div><button id="pro-btn" class="circle-btn" onclick="executeVote('贊成')" style="background:#28a745"></button></div>
@@ -290,7 +297,8 @@
                 const preSection = document.getElementById('pre-auth-section');
                 let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
                 
-                if (currentUserName && attendance[currentUserName]) {
+                // 只有在重置或沒名字時顯示輸入框
+                if (currentUserName && (attendance[currentUserName] || hasVoted)) {
                     preSection.style.display = 'none';
                 } else {
                     preSection.style.display = 'block';
@@ -324,7 +332,7 @@
                         document.querySelectorAll('.circle-btn').forEach(b => b.classList.remove('enabled'));
                     }
                 } else {
-                    if (currentUserName && attendance[currentUserName]) {
+                    if (currentUserName && (attendance[currentUserName] === "entered" || attendance[currentUserName] === true)) {
                         statusHeader.innerText = "已輸入姓名，請稍待主席宣布開始表決";
                     } else {
                         statusHeader.innerText = "表決尚未開始，請先輸入名字並稍待主席宣布開始表決";
@@ -393,6 +401,8 @@
             if (prompt("管理密碼：") === "0126") {
                 dbVotes.set(null); dbAttendance.set(null);
                 dbConfig.set({ isLocked: true, voteTitle: "", startTime: 0, showResult: false, resetSignal: 1 });
+                // 強制清空本地存儲的名字，讓頁面完全回歸初始
+                localStorage.removeItem('cssc_user_name');
                 if(view === 'admin') location.reload();
             }
         }

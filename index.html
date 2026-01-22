@@ -51,22 +51,23 @@
         .title-container { 
             flex: 1.2; 
             display: flex; 
-            justify-content: flex-start; /* 容器內容整體靠左 */
+            justify-content: flex-start; 
             align-items: center; 
             height: 100%;
-            padding: 0 20px; /* 增加左右縮排，美觀考量 */
+            padding: 0 25px; 
             overflow: hidden; 
-            box-sizing: border-box;
+            box-sizing: border-box; /* 確保內縮不會影響寬度計算 */
         }
         .title-left { 
             color: #ffc107; 
             font-weight: 900; 
             font-size: 2.3rem; 
-            text-align: left; /* 文字強制靠左對齊 */
+            text-align: left; 
             line-height: 1.1; 
             white-space: nowrap; 
-            display: inline-block;
-            transition: font-size 0.1s; 
+            display: block; /* 改為 block 確保容器檢測更精準 */
+            width: fit-content;
+            transition: font-size 0.05s; 
         }
 
         .header-right-group { flex: 1.5; display: flex; justify-content: flex-start; gap: 40px; }
@@ -164,7 +165,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         let view = urlParams.get('view');
 
-        dbConfig.child('resetSignal').once('value', s => { if(s.val() === 0) sessionStorage.removeItem('reloaded_by_signal'); });
+        dbConfig.child('resetSignal').once('value', s => { if(s.val() === 1) sessionStorage.removeItem('reloaded_by_signal'); });
 
         if (view === 'admin' || view === 'monitor') {
             const authKey = `is_auth_${view}`;
@@ -218,7 +219,10 @@
             let fontSize = 2.3; 
             titleEl.style.fontSize = fontSize + "rem";
             
-            while (titleEl.scrollWidth > container.clientWidth && fontSize > 0.4) {
+            // 修正：偵測內容是否超出容器（考量容器 padding）
+            const maxW = container.clientWidth - parseInt(window.getComputedStyle(container).paddingLeft) - parseInt(window.getComputedStyle(container).paddingRight);
+            
+            while (titleEl.scrollWidth > maxW && fontSize > 0.4) {
                 fontSize -= 0.05;
                 titleEl.style.fontSize = fontSize + "rem";
             }
@@ -226,7 +230,7 @@
 
         function updateUI(data) {
             data = data || {};
-            const config = data.system_config || { isLocked: true, startTime: 0, voteTitle: "", resetSignal: 0 };
+            const config = data.system_config || { isLocked: true, startTime: 0, voteTitle: "", resetSignal: 0, showResult: false };
             const attendance = data.attendance_list || {};
             const votes = data.detailed_votes || {};
 
@@ -239,7 +243,13 @@
 
             if (!config.isLocked && config.startTime > 0) {
                 const elapsed = Math.floor((Date.now() - config.startTime) / 1000);
-                updateClock(Math.max(0, 60 - elapsed));
+                const remain = Math.max(0, 60 - elapsed);
+                updateClock(remain);
+                
+                // 修正：若時間到且仍未顯示結果，且身分是 admin，則自動發送顯示結果指令
+                if (remain === 0 && !config.showResult && view === 'admin') {
+                    dbConfig.update({ showResult: true });
+                }
             } else { updateClock(60); }
 
             if (document.getElementById('display-vote-title')) {
@@ -343,7 +353,15 @@
         setInterval(() => {
             dbConfig.once('value', s => {
                 const c = s.val() || {};
-                if(!c.isLocked && c.startTime > 0) updateClock(Math.max(0, 60 - Math.floor((Date.now() - c.startTime) / 1000)));
+                if(!c.isLocked && c.startTime > 0) {
+                    const elapsed = Math.floor((Date.now() - c.startTime) / 1000);
+                    const remain = Math.max(0, 60 - elapsed);
+                    updateClock(remain);
+                    // 時間到且是管理員，更新 Firebase 讓所有人看結果
+                    if (remain === 0 && !c.showResult && view === 'admin') {
+                        dbConfig.update({ showResult: true });
+                    }
+                }
             });
         }, 1000);
         

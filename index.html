@@ -25,61 +25,29 @@
         .system-top-title { text-align: center; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; padding: 15px 0 5px 0; letter-spacing: 4px; flex-shrink: 0; }
         body.admin-mode .system-top-title { color: #fff; }
 
-        /* 統一所有介面的資訊欄容器 */
-        .info-bar-common { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: clamp(20px, 10vw, 80px); 
-            font-weight: 900; 
-        }
+        .info-bar-common { display: flex; justify-content: center; align-items: center; gap: clamp(20px, 10vw, 80px); font-weight: 900; }
+        .info-item-stack, .label-split { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.4; }
+        .info-item-side { display: flex; flex-direction: row; align-items: center; gap: 15px; }
+        .label-split { font-size: clamp(1.2rem, 3.5vw, 2rem); text-align: left; }
+        .font-main { font-size: clamp(1.5rem, 4vw, 2.2rem); letter-spacing: 2px; white-space: nowrap; margin: 0; padding: 0; }
 
-        /* 關鍵：統一所有國字組合的行高與對齊 */
-        .info-item-stack, .label-split { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: flex-start; 
-            line-height: 1.4; /* 統一國字行距 */
-        }
-
-        .info-item-side { 
-            display: flex; 
-            flex-direction: row; 
-            align-items: center; 
-            gap: 15px;
-        }
-
-        .label-split { 
-            font-size: clamp(1.2rem, 3.5vw, 2rem); 
-            text-align: left;
-        }
-
-        .font-main { 
-            font-size: clamp(1.5rem, 4vw, 2.2rem); 
-            letter-spacing: 2px;
-            white-space: nowrap;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* 統一放大計時器數字，並確保頂尾對齊 1.4 行高的國字 */
         #user-timer-value, #timer-display {
             font-size: clamp(3rem, 9vw, 5.2rem) !important; 
             font-weight: 900;
             font-family: "Courier New", monospace;
-            color: #ffc107;
             line-height: 1; 
             display: flex;
             align-items: center;
             margin-top: 2px;
         }
 
-        /* 調整主席/監測模式的 Header 布局 */
+        #user-timer-value { color: #ffc107; }
+        #timer-display { color: #ffffff; }
+
         .user-info-bar { color: #ffc107; margin: 10px 0; min-height: 80px; flex-shrink: 0; }
         .header-info-group { color: #ffffff; }
         .admin-header { display: none; padding-bottom: 10px; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
-        .title-bar { display: flex; align-items: center; width: 100%; height: 130px; position: relative; } /* 微調高度容納大數字 */
-        
+        .title-bar { display: flex; align-items: center; width: 100%; height: 130px; position: relative; }
         .title-container { flex: 1.2; display: flex; justify-content: center; align-items: center; }
         .title-left { color: #ffc107; font-weight: 900; font-size: clamp(1.2rem, 3vw, 2.3rem); text-align: center; line-height: 1.2; max-width: 95%; }
         .header-right-group { flex: 1.5; display: flex; justify-content: flex-start; gap: 40px; }
@@ -112,26 +80,15 @@
     <div class="system-top-title">臺北市私立靜心高級中學學生會議案表決系統</div>
     
     <div id="user-info-bar" class="info-bar-common user-info-bar" style="display:none;">
-        <div class="info-item-stack">
-            <div class="font-main">表決型態</div>
-            <div class="font-main">記名</div>
-        </div>
-        <div class="info-item-side">
-            <div class="label-split"><span>倒數</span><span>計時</span></div>
-            <div id="user-timer-value">01:00</div>
-        </div>
+        <div class="info-item-stack"><div class="font-main">表決型態</div><div class="font-main">記名</div></div>
+        <div class="info-item-side"><div class="label-split"><span>倒數</span><span>計時</span></div><div id="user-timer-value">01:00</div></div>
     </div>
 
     <div id="header-section" class="admin-header">
         <div class="title-bar">
-            <div class="title-container">
-                <div id="display-vote-title" class="title-left">表決尚未開始</div>
-            </div>
+            <div class="title-container"><div id="display-vote-title" class="title-left">表決尚未開始</div></div>
             <div class="header-right-group info-bar-common header-info-group">
-                <div class="info-item-stack">
-                    <div class="font-main">表決型態</div>
-                    <div class="font-main">記名</div>
-                </div>
+                <div class="info-item-stack"><div class="font-main">表決型態</div><div class="font-main">記名</div></div>
                 <div class="info-item-side">
                     <div class="label-split"><span>倒數</span><span>計時</span></div>
                     <div id="timer-display">01:00</div>
@@ -182,7 +139,7 @@
         const dbAttendance = db.ref('attendance_list');
         const dbConfig = db.ref('system_config');
 
-        const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "決致寬", "楊桂愷", "張丞萱"];
+        const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "李致寬", "楊桂愷", "張丞萱"];
         let currentUserName = localStorage.getItem('cssc_user_name') || "";
         let isAttended = false;
         const urlParams = new URLSearchParams(window.location.search);
@@ -191,7 +148,7 @@
         if (view === 'admin' || view === 'monitor') {
             const authKey = `is_auth_${view}`;
             if (!sessionStorage.getItem(authKey)) {
-                const pwd = prompt(`進入${view === 'admin' ? '主席' : '監測'}模式，請輸入密碼：`);
+                const pwd = prompt(`進入模式，請輸入密碼：`);
                 if (pwd !== "0126") window.location.href = window.location.pathname;
                 else { sessionStorage.setItem(authKey, "true"); setupView(); }
             } else { setupView(); }
@@ -215,7 +172,7 @@
                 if (currentData !== null) return; 
                 return "entered";
             }, (error, committed) => {
-                if (!committed) { alert("此名稱已由其他載具輸入，請檢查姓名是否正確"); inputField.value = ""; } 
+                if (!committed) { alert("此名稱已由其他載具輸入"); inputField.value = ""; } 
                 else {
                     currentUserName = nameInput;
                     localStorage.setItem('cssc_user_name', currentUserName);
@@ -237,7 +194,12 @@
             const attendance = data.attendance_list || {};
             const votes = data.detailed_votes || {};
 
-            if (!view && config.resetSignal) { localStorage.removeItem('cssc_user_name'); location.reload(); return; }
+            // 修正：避免重整死循環
+            if (!view && config.resetSignal === 1) { 
+                localStorage.removeItem('cssc_user_name');
+                setTimeout(() => { location.reload(); }, 300);
+                return; 
+            }
 
             if (!config.isLocked && config.startTime > 0) {
                 const elapsed = Math.floor((Date.now() - config.startTime) / 1000);
@@ -307,12 +269,12 @@
         function confirmTitle() {
             const t = document.getElementById('vote-title-input').value.trim();
             if (!t) return alert("請輸入標題");
-            dbConfig.update({ voteTitle: t, isLocked: true, startTime: 0, showResult: false });
+            dbConfig.update({ voteTitle: t, isLocked: true, startTime: 0, showResult: false, resetSignal: 0 });
         }
         function startVoting() { 
             dbConfig.once('value', snap => {
                 if(!snap.val().voteTitle) return alert("請先輸入標題並點擊確認");
-                dbConfig.update({ isLocked: false, startTime: Date.now(), showResult: false }); 
+                dbConfig.update({ isLocked: false, startTime: Date.now(), showResult: false, resetSignal: 0 }); 
             });
         }
         function executeAttendance() { if (currentUserName) dbAttendance.child(currentUserName).set(true); }
@@ -326,8 +288,11 @@
         function adminReset() {
             if (confirm("確定要重置所有數據嗎？")) {
                 dbVotes.set(null); dbAttendance.set(null);
-                dbConfig.update({ isLocked: true, voteTitle: "", startTime: 0, showResult: false, resetSignal: 1 });
-                if(view === 'admin') location.reload();
+                dbConfig.update({ isLocked: true, voteTitle: "", startTime: 0, showResult: false, resetSignal: 1 }, () => {
+                    // 核心修正：1秒後把訊號改回 0，防止死循環
+                    setTimeout(() => { dbConfig.update({ resetSignal: 0 }); }, 1000);
+                    if(view === 'admin') location.reload();
+                });
             }
         }
         setInterval(() => {
